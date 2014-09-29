@@ -9,11 +9,15 @@ def encrypted_file_parent
 end
 
 def decrypted_folder_parent
-    return File.dirname decrypted_folder
+    return File.dirname decrypted_folder_full_path
 end
 
-def decrypted_folder
-    return File.expand_path "~/decrypted_folder/t/"
+def decrypted_folder_full_path
+    return File.expand_path "~/decrypted_folder/#{decrypted_folder_name}"
+end
+
+def decrypted_folder_name
+    return "t/"
 end
 
 task :help do
@@ -28,14 +32,16 @@ task :help do
     puts ""
     puts "Settings"
     puts "="*16
-    puts "encrypted_file          => #{encrypted_file}"
-    puts "encrypted_file_parent   => #{encrypted_file_parent}"
-    puts "decrypted_folder_parent => #{decrypted_folder_parent}"
-    puts "decrypted_folder        => #{decrypted_folder}"
+    puts "encrypted_file               => #{encrypted_file}"
+    puts "encrypted_file_parent        => #{encrypted_file_parent}"
+    puts "decrypted_folder_parent      => #{decrypted_folder_parent}"
+    puts "decrypted_folder_full_path   => #{decrypted_folder_full_path}"
 end
 
 task :encrypt => [:create_decrypted_folder_parent, :create_encrypted_file_folder] do
-    sh "zip -er #{encrypted_file} #{decrypted_folder}"
+    Dir.chdir(decrypted_folder_parent){
+        sh "zip -er #{encrypted_file} #{decrypted_folder_name}"
+    }
 end
 
 task :create_decrypted_folder_parent do
@@ -51,7 +57,7 @@ task :decrypt => [:ensure_decrypted_folder_doesnt_exist, :create_decrypted_folde
 end
 
 task :ensure_decrypted_folder_doesnt_exist do
-    if File.exists? decrypted_folder
-        fail "Decrypted folder already exists at '#{decrypted_folder}' please manually delete it before continuing"
+    if File.exists? decrypted_folder_full_path
+        fail "Decrypted folder already exists at '#{decrypted_folder_full_path}' please manually delete it before continuing"
     end
 end
