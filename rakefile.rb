@@ -28,6 +28,7 @@ task :help do
     puts "="*16
     puts "decrypt (d)"
     puts "encrypt (e)"
+    puts "clean   (c)"
 
     puts ""
     puts "Settings"
@@ -43,6 +44,8 @@ task :encrypt => [:create_decrypted_folder_parent, :create_encrypted_file_folder
     Dir.chdir(decrypted_folder_parent){
         sh "zip -er #{encrypted_file} #{decrypted_folder_name}"
     }
+
+    Rake::Task[:clean].invoke
 end
 
 task :create_decrypted_folder_parent do
@@ -62,4 +65,9 @@ task :ensure_decrypted_folder_doesnt_exist do
     if File.exists? decrypted_folder_full_path
         fail "Decrypted folder already exists at '#{decrypted_folder_full_path}' please manually delete it before continuing"
     end
+end
+
+task :c => :clean
+task :clean do
+    rm_rf decrypted_folder_full_path
 end
