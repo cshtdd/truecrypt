@@ -26,8 +26,8 @@ task :help do
     puts ""
     puts "Tasks"
     puts "="*16
-    puts "decrypt"
-    puts "encrypt"
+    puts "decrypt (d)"
+    puts "encrypt (e)"
 
     puts ""
     puts "Settings"
@@ -38,6 +38,7 @@ task :help do
     puts "decrypted_folder_full_path   => #{decrypted_folder_full_path}"
 end
 
+task :e => :encrypt
 task :encrypt => [:create_decrypted_folder_parent, :create_encrypted_file_folder] do
     Dir.chdir(decrypted_folder_parent){
         sh "zip -er #{encrypted_file} #{decrypted_folder_name}"
@@ -52,6 +53,7 @@ task :create_encrypted_file_folder do
     `mkdir #{encrypted_file_parent}`
 end
 
+task :d => :decrypt
 task :decrypt => [:ensure_decrypted_folder_doesnt_exist, :create_decrypted_folder_parent] do
     sh "unzip -n #{encrypted_file} -d #{decrypted_folder_parent}"
 end
