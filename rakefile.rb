@@ -34,14 +34,24 @@ task :help do
     puts "decrypted_folder        => #{decrypted_folder}"
 end
 
-task :encrypt => [:create_decrypted_folder, :create_encrypted_file_folder] do
+task :encrypt => [:create_decrypted_folder_parent, :create_encrypted_file_folder] do
     sh "zip -er #{encrypted_file} #{decrypted_folder}"
 end
 
-task :create_decrypted_folder do
+task :create_decrypted_folder_parent do
     `mkdir #{decrypted_folder_parent}`
 end
 
 task :create_encrypted_file_folder do
     `mkdir #{encrypted_file_parent}`
+end
+
+task :decrypt => [:ensure_decrypted_folder_doesnt_exist, :create_decrypted_folder_parent] do
+    sh "unzip -n #{encrypted_file} -d #{decrypted_folder_parent}"
+end
+
+task :ensure_decrypted_folder_doesnt_exist do
+    if File.exists? decrypted_folder
+        fail "Decrypted folder already exists at '#{decrypted_folder}' please manually delete it before continuing"
+    end
 end
