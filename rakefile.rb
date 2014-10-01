@@ -29,6 +29,7 @@ task :help do
     puts "decrypt (d)"
     puts "encrypt (e)"
     puts "clean   (c)"
+    puts "setup"
 
     puts ""
     puts "Settings"
@@ -70,4 +71,42 @@ end
 task :c => :clean
 task :clean do
     rm_rf decrypted_folder_full_path
+end
+
+task :setup do
+    decrypt_contents = %{
+#!/bin/sh
+pushd #{basedir}
+rake d
+read -p "Press any key to continue..."
+}
+    generate_task_alias "decrypt.sh.command", decrypt_contents
+
+    clean_contents = %{
+#!/bin/sh
+pushd #{basedir}
+rake c
+read -p "Press any key to continue..."
+}
+    generate_task_alias "clean.sh.command", clean_contents
+end
+
+def generate_task_alias(filename, file_contents)
+    file_path = get_full_path filename
+    write_file file_path, file_contents
+    chmod "+x", file_path
+end
+
+def basedir
+   return File.expand_path "."
+end
+
+def get_full_path(filename)
+    return File.join(basedir, filename)
+end
+
+def write_file(file_path, file_content)
+    File.open(file_path, "w") do |f|
+        f.puts file_content
+    end
 end
