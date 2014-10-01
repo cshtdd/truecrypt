@@ -74,21 +74,22 @@ task :clean do
 end
 
 task :setup do
-    decrypt_contents = %{
-#!/bin/sh
-pushd #{basedir}
-rake d
-read -p "Press any key to continue..."
-}
-    generate_task_alias "decrypt.sh.command", decrypt_contents
+    ["clean", "decrypt", "encrypt"].each { |task_name|
+        generate_task_alias_wrapper task_name
+    }
+end
 
-    clean_contents = %{
+def generate_task_alias_wrapper(task_name)
+    generate_task_alias "#{task_name}.sh.command", get_file_contents(task_name)
+end
+
+def get_file_contents(task_name)
+    return %{
 #!/bin/sh
 pushd #{basedir}
-rake c
+rake #{task_name}
 read -p "Press any key to continue..."
 }
-    generate_task_alias "clean.sh.command", clean_contents
 end
 
 def generate_task_alias(filename, file_contents)
