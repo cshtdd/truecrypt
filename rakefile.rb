@@ -4,6 +4,10 @@ def encrypted_file
     return File.expand_path "~/Documents/t/t.zip"
 end
 
+def encrypted_file_bck
+    return "#{encrypted_file}.bck"
+end
+
 def encrypted_file_parent
     return File.dirname encrypted_file
 end
@@ -41,21 +45,18 @@ task :help do
 end
 
 task :e => :encrypt
-task :encrypt => [:create_decrypted_folder_parent, :create_encrypted_file_folder] do
-    encrypted_file_bck = "#{encrypted_file}.bck"
-    if File.file? encrypted_file
-        mv encrypted_file, encrypted_file_bck
-    end
-
+task :encrypt => [:create_decrypted_folder_parent, :create_encrypted_file_folder, :create_encrypted_file_backup] do
     Dir.chdir(decrypted_folder_parent){        
         sh "zip -er #{encrypted_file} #{decrypted_folder_name}"
     }
 
-    if File.file? encrypted_file_bck
-        rm encrypted_file_bck
-    end
-
     Rake::Task[:clean].invoke
+end
+
+task :create_encrypted_file_backup do
+    if File.file? encrypted_file
+        mv encrypted_file, encrypted_file_bck
+    end
 end
 
 task :create_decrypted_folder_parent do
@@ -80,6 +81,10 @@ end
 task :c => :clean
 task :clean do
     rm_rf decrypted_folder_full_path
+
+    if File.file? encrypted_file_bck
+        rm encrypted_file_bck
+    end
 end
 
 task :setup do
