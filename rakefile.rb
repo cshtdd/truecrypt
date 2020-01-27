@@ -5,23 +5,23 @@ def encrypted_file
 end
 
 def encrypted_file_bck
-    return "#{encrypted_file}.bck"
+    "#{encrypted_file}.bck"
 end
 
 def encrypted_file_parent
-    return File.dirname encrypted_file
+    File.dirname encrypted_file
 end
 
 def decrypted_folder_parent
-    return File.dirname decrypted_folder_full_path
+    File.dirname decrypted_folder_full_path
 end
 
 def decrypted_folder_full_path
-    return File.expand_path "~/decrypted_folder/#{decrypted_folder_name}"
+    File.expand_path "~/decrypted_folder/#{decrypted_folder_name}"
 end
 
 def decrypted_folder_name
-    return "t/"
+    "t/"
 end
 
 task :help do
@@ -98,7 +98,7 @@ def generate_task_alias_wrapper(task_name)
 end
 
 def get_file_contents(task_name)
-    return %{
+    %{
 #!/bin/sh
 pushd #{basedir}
 rake #{task_name}
@@ -113,11 +113,11 @@ def generate_task_alias(filename, file_contents)
 end
 
 def basedir
-   return File.expand_path "."
+    File.expand_path "."
 end
 
 def get_full_path(filename)
-    return File.join(basedir, filename)
+    File.join(basedir, filename)
 end
 
 def write_file(file_path, file_content)
