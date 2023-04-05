@@ -4,29 +4,30 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"tddapps.com/truecrypt/internal/settings"
 )
 
 var flagSetup bool
 var flagEncrypt bool
 var flagDecrypt bool
 var flagClean bool
+var flagSettingsPath string
 
 func init() {
+	// Commands
 	flag.BoolVar(&flagSetup, "setup", false, "Setup settings")
 	flag.BoolVar(&flagEncrypt, "encrypt", false, "Encrypts decrypted folder")
 	flag.BoolVar(&flagDecrypt, "decrypt", false, "Decrypts encrypted folder")
 	flag.BoolVar(&flagClean, "clean", false, "Deletes the decrypted folder")
+
+	// Other config
+	flag.StringVar(&flagSettingsPath, "settings", settings.DefaultSettingsPath(), "[Optional] Settings file path")
+
 	flag.Parse()
 }
 
 func main() {
-	pwd, err := os.Getwd()
-	if err != nil {
-		fmt.Println("Cannot read PWD")
-		os.Exit(1)
-	}
-	fmt.Println("Truecrypt", "pwd:", pwd, "flags:", flag.Args())
-
 	switch {
 	case flagSetup:
 		fmt.Println("Setup")
