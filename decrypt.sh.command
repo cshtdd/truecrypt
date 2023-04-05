@@ -3,5 +3,5 @@
 SCRIPT_DIR="$(dirname -- "$0")"
 
 pushd $SCRIPT_DIR
-./truecrypt decrypt
+./truecrypt -decrypt
 popd
