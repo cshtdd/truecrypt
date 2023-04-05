@@ -3,15 +3,21 @@
 package settings
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 )
 
+type Settings struct {
+	DecryptedFolder string
+	EncryptedFile   string
+}
+
 // Reads the default settings path.
 // Supports environment variable overrides.
 func DefaultSettingsPath() string {
-	if pathOverride, exists := os.LookupEnv("TC_SETTINGS"); exists {
-		return pathOverride
+	if override, found := os.LookupEnv(envSettings); found {
+		return override
 	}
 
 	pwd, err := os.Getwd()
@@ -20,4 +26,44 @@ func DefaultSettingsPath() string {
 	}
 
 	return filepath.Join(pwd, ".settings.json")
+}
+
+// Reads the default decrypted folder.
+// Supports environment variable overrides.
+func DefaultDecryptedFolder() string {
+	if override, found := os.LookupEnv(envDecrypted); found {
+		return override
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic("Cannot read $HOME")
+	}
+
+	return filepath.Join(homeDir, "decrypted_folder/t")
+}
+
+func (s Settings) Save(path string) error {
+	bytes, e := json.Marshal(s)
+	if e != nil {
+		return e
+	}
+
+	const userRwOthersR = 0644
+	if e := os.WriteFile(path, bytes, userRwOthersR); e != nil {
+		return e
+	}
+
+	return nil
+}
+
+func LoadFrom(path string) (Settings, error) {
+	result := Settings{}
+	bytes, e := os.ReadFile(path)
+	if e != nil {
+		return result, e
+	}
+
+	json.Unmarshal(bytes, &result)
+	return result, nil
 }
