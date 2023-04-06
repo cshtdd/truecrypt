@@ -15,22 +15,25 @@ type Input struct {
 
 // func Run(io internal.IO) error {
 func Run(in Input) error {
-	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
+	s := settings.Settings{}
 
-	var encryptedFile string
+	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
 
 	// TODO: refactor this out to a nicer interface
 	scanner := bufio.NewScanner(in.IO.Reader)
 	if scanner.Scan() {
-		encryptedFile = scanner.Text()
+		s.EncryptedFile = scanner.Text()
 	}
 	if err := scanner.Err(); err != nil {
 		return err
 	}
 
-	fmt.Fprintln(in.IO.Writer, encryptedFile)
+	if valid, err := s.IsValidEncryptedFile(); !valid {
+		return err
+	}
 
-	s := settings.Settings{EncryptedFile: encryptedFile}
+	fmt.Fprintln(in.IO.Writer, s.EncryptedFile)
+
 	if err := s.Save(in.SettingsPath); err != nil {
 		return err
 	}
