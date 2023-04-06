@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/settings"
+	"tddapps.com/truecrypt/internal/setup"
 )
 
 var flagSetup bool
@@ -28,10 +30,19 @@ func init() {
 }
 
 func main() {
+	const Success = 0
+	exitCode := Success
+
+	io := internal.IO{Reader: os.Stdin, Writer: os.Stdout}
+
 	switch {
 	case flagSetup:
 		fmt.Println("Setup")
-		// TODO: implement this
+		i := setup.Input{IO: io, SettingsPath: flagSettingsPath}
+		if e := setup.Run(i); e != nil {
+			fmt.Println("Setup error", e)
+			exitCode = 1
+		}
 	case flagDecrypt:
 		fmt.Println("Decrypt")
 		// TODO: implement this
@@ -44,6 +55,10 @@ func main() {
 	default:
 		fmt.Println("Action missing")
 		flag.Usage()
-		os.Exit(1)
+		exitCode = 1
+	}
+
+	if exitCode != Success {
+		os.Exit(exitCode)
 	}
 }
