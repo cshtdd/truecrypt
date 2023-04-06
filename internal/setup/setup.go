@@ -2,6 +2,7 @@ package setup
 
 import (
 	"bufio"
+	"fmt"
 
 	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/settings"
@@ -14,8 +15,7 @@ type Input struct {
 
 // func Run(io internal.IO) error {
 func Run(in Input) error {
-	// TODO: implement this
-	in.IO.Writeln("Enter encrypted file:")
+	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
 
 	var encryptedFile string
 
@@ -28,7 +28,7 @@ func Run(in Input) error {
 		return err
 	}
 
-	in.IO.Writeln(encryptedFile)
+	fmt.Fprintln(in.IO.Writer, encryptedFile)
 
 	s := settings.Settings{EncryptedFile: encryptedFile}
 	if err := s.Save(in.SettingsPath); err != nil {
