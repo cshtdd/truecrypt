@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"tddapps.com/truecrypt/internal/settings"
+	"tddapps.com/truecrypt/internal/test/helpers"
 )
 
 func TestDefaultSettingsPath(t *testing.T) {
@@ -48,21 +49,40 @@ func TestDefaultDecryptedFolderEnvOverride(t *testing.T) {
 }
 
 func TestSettingsSerialization(t *testing.T) {
-	tmp, err := os.CreateTemp("", "tc_settings")
-	if err != nil {
-		t.Fatal("Cannot create tmp file", err)
-	}
-	defer os.Remove(tmp.Name())
+	tmp := helpers.CreateTemp(t)
 
 	s := settings.Settings{DecryptedFolder: "aaa/bbb", EncryptedFile: "ccc.zip"}
-	s.Save(tmp.Name())
+	s.Save(tmp)
 
-	x, err := settings.LoadFrom(tmp.Name())
+	x, err := settings.LoadFrom(tmp)
 	if err != nil {
 		t.Fatal("Got unexpected error", err)
 	}
 
 	if x != s {
 		t.Errorf("got %v+, want %v+", x, s)
+	}
+}
+
+func TestSettingsIsValidEncryptedFile(t *testing.T) {
+	tmp := helpers.CreateTemp(t)
+
+	tests := []struct {
+		file        string
+		want        bool
+		description string
+	}{
+		{"", false, "Empty file does not exist"},
+		{"not_found", false, "Not found file does not exist"},
+		{tmp, true, "File exists"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s := settings.Settings{EncryptedFile: test.file}
+			if got, _ := s.IsValidEncryptedFile(); got != test.want {
+				t.Errorf("s.IsValidEncryptedFile(%s) = %t, want %t", test.file, got, test.want)
+			}
+		})
 	}
 }

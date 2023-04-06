@@ -8,11 +8,6 @@ import (
 	"path/filepath"
 )
 
-type Settings struct {
-	DecryptedFolder string
-	EncryptedFile   string
-}
-
 // Reads the default settings path.
 // Supports environment variable overrides.
 func DefaultSettingsPath() string {
@@ -43,6 +38,22 @@ func DefaultDecryptedFolder() string {
 	return filepath.Join(homeDir, "decrypted_folder/t")
 }
 
+type Settings struct {
+	DecryptedFolder string
+	EncryptedFile   string
+}
+
+func LoadFrom(path string) (Settings, error) {
+	result := Settings{}
+	bytes, e := os.ReadFile(path)
+	if e != nil {
+		return result, e
+	}
+
+	json.Unmarshal(bytes, &result)
+	return result, nil
+}
+
 func (s Settings) Save(path string) error {
 	bytes, e := json.Marshal(s)
 	if e != nil {
@@ -57,13 +68,9 @@ func (s Settings) Save(path string) error {
 	return nil
 }
 
-func LoadFrom(path string) (Settings, error) {
-	result := Settings{}
-	bytes, e := os.ReadFile(path)
-	if e != nil {
-		return result, e
+func (s Settings) IsValidEncryptedFile() (bool, error) {
+	if _, err := os.Stat(s.EncryptedFile); err != nil {
+		return false, err
 	}
-
-	json.Unmarshal(bytes, &result)
-	return result, nil
+	return true, nil
 }
