@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"tddapps.com/truecrypt/internal"
+	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 	"tddapps.com/truecrypt/internal/setup"
 )
@@ -38,9 +39,9 @@ func main() {
 	switch {
 	case flagSetup:
 		fmt.Println("Setup")
-		i := setup.Input{IO: io, SettingsPath: flagSettingsPath}
-		if e := setup.Run(i); e != nil {
-			fmt.Println("Setup error", e)
+		i := setup.Input{IO: io, SettingsPath: paths.Path(flagSettingsPath)}
+		if err := setup.Run(i); err != nil {
+			fmt.Println("Setup error", err)
 			exitCode = 1
 		}
 	case flagDecrypt:

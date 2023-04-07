@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+
+	"tddapps.com/truecrypt/internal/paths"
 )
 
 // Reads the default settings path.
@@ -39,38 +41,30 @@ func DefaultDecryptedFolder() string {
 }
 
 type Settings struct {
-	DecryptedFolder string
-	EncryptedFile   string
+	DecryptedFolder paths.Path
+	EncryptedFile   paths.Path
 }
 
-func LoadFrom(path string) (Settings, error) {
+func LoadFrom(path paths.Path) (Settings, error) {
 	result := Settings{}
-	bytes, e := os.ReadFile(path)
-	if e != nil {
-		return result, e
+	bytes, err := path.Read()
+	if err != nil {
+		return result, err
 	}
 
 	json.Unmarshal(bytes, &result)
 	return result, nil
 }
 
-func (s Settings) Save(path string) error {
-	bytes, e := json.Marshal(s)
-	if e != nil {
-		return e
+func (s Settings) Save(path paths.Path) error {
+	bytes, err := json.Marshal(s)
+	if err != nil {
+		return err
 	}
 
-	const userRwOthersR = 0644
-	if e := os.WriteFile(path, bytes, userRwOthersR); e != nil {
-		return e
+	if err := path.Write(bytes); err != nil {
+		return err
 	}
 
 	return nil
-}
-
-func (s Settings) IsValidEncryptedFile() (bool, error) {
-	if _, err := os.Stat(s.EncryptedFile); err != nil {
-		return false, err
-	}
-	return true, nil
 }

@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 	"tddapps.com/truecrypt/internal/test/helpers"
 )
@@ -68,7 +69,7 @@ func TestSettingsIsValidEncryptedFile(t *testing.T) {
 	tmp := helpers.CreateTemp(t)
 
 	tests := []struct {
-		file        string
+		file        paths.Path
 		want        bool
 		description string
 	}{
@@ -80,7 +81,7 @@ func TestSettingsIsValidEncryptedFile(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			s := settings.Settings{EncryptedFile: test.file}
-			if got, _ := s.IsValidEncryptedFile(); got != test.want {
+			if got, _ := s.EncryptedFile.Exists(); got != test.want {
 				t.Errorf("s.IsValidEncryptedFile(%s) = %t, want %t", test.file, got, test.want)
 			}
 		})

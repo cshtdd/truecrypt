@@ -5,12 +5,13 @@ import (
 	"fmt"
 
 	"tddapps.com/truecrypt/internal"
+	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 )
 
 type Input struct {
 	internal.IO
-	SettingsPath string
+	SettingsPath paths.Path
 }
 
 // func Run(io internal.IO) error {
@@ -22,16 +23,17 @@ func Run(in Input) error {
 	// TODO: refactor this out to a nicer interface
 	scanner := bufio.NewScanner(in.IO.Reader)
 	if scanner.Scan() {
-		s.EncryptedFile = scanner.Text()
+		s.EncryptedFile = paths.Path(scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
 		return err
 	}
 
-	if valid, err := s.IsValidEncryptedFile(); !valid {
+	if exists, err := s.EncryptedFile.Exists(); !exists {
 		return err
 	}
 
+	// TODO: print the settings struct here
 	fmt.Fprintln(in.IO.Writer, s.EncryptedFile)
 
 	if err := s.Save(in.SettingsPath); err != nil {
