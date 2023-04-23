@@ -16,7 +16,9 @@ type Input struct {
 
 // func Run(io internal.IO) error {
 func Run(in Input) error {
-	s := settings.Settings{}
+	s := settings.Settings{
+		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
+	}
 
 	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
 
@@ -31,6 +33,11 @@ func Run(in Input) error {
 
 	if exists, err := s.EncryptedFile.Exists(); !exists {
 		return err
+	}
+
+	fmt.Fprintln(in.IO.Writer, "Enter decrypted folder:")
+	if scanner.Scan() {
+		s.DecryptedFolder = paths.Path(scanner.Text())
 	}
 
 	// TODO: print the settings struct here
