@@ -15,21 +15,18 @@ import (
 
 func TestRunsOutputValidation(t *testing.T) {
 	tests := []struct {
-		settingsPath    paths.Path
-		encryptedPath   paths.Path
-		decryptedFolder paths.Path
-		description     string
+		settingsPath  paths.Path
+		encryptedPath paths.Path
+		description   string
 	}{
 		{
 			helpers.CreateTemp(t),
 			helpers.CreateTemp(t),
-			"",
 			"Encrypted file exists with full path",
 		},
 		{
 			helpers.CreateTemp(t),
 			helpers.CreateTempInHome(t),
-			"",
 			"Encrypted file exists on home",
 		},
 	}
