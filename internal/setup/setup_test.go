@@ -2,6 +2,7 @@ package setup_test
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -50,10 +51,15 @@ func TestRunsOutputValidation(t *testing.T) {
 			}
 
 			// validate program prompts
+			expectedSettings := settings.Settings{
+				DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
+				EncryptedFile:   test.encryptedPath,
+			}
 			lines := strings.Join([]string{
 				"Enter encrypted file:",
 				"Enter decrypted folder:",
-				test.encryptedPath.String(),
+				fmt.Sprintf("Saving settings: %+v", expectedSettings),
+				fmt.Sprintf("Settings Path: %s", test.settingsPath.String()),
 				"",
 			}, "\n")
 			if out := fakeOut.String(); out != lines {

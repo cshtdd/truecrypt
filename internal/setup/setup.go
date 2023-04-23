@@ -40,8 +40,8 @@ func Run(in Input) error {
 		s.DecryptedFolder = paths.Path(scanner.Text())
 	}
 
-	// TODO: print the settings struct here
-	fmt.Fprintln(in.IO.Writer, s.EncryptedFile)
+	fmt.Fprintf(in.IO.Writer, "Saving settings: %+v\n", s)
+	fmt.Fprintf(in.IO.Writer, "Settings Path: %s\n", in.SettingsPath.String())
 
 	if err := s.Save(in.SettingsPath); err != nil {
 		return err
