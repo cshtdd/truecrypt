@@ -8,18 +8,17 @@ import (
 type IO struct {
 	Reader io.Reader
 	Writer io.Writer
+
+	scanner *bufio.Scanner
 }
 
-type LineReader bufio.Scanner
-
-func (io *IO) NewLineReader() *LineReader {
-	return (*LineReader)(bufio.NewScanner(io.Reader))
-}
-
-func (s *LineReader) Read() (read bool, line string, err error) {
-	scanner := (*bufio.Scanner)(s)
-	if read = scanner.Scan(); read {
-		line = scanner.Text()
+func (io *IO) ReadLine() (read bool, line string, err error) {
+	if io.scanner == nil {
+		io.scanner = bufio.NewScanner(io.Reader)
 	}
-	return read, line, scanner.Err()
+
+	if read = io.scanner.Scan(); read {
+		line = io.scanner.Text()
+	}
+	return read, line, io.scanner.Err()
 }

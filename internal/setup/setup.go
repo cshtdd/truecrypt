@@ -19,9 +19,7 @@ func Run(in Input) error {
 	}
 
 	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
-
-	lineReader := in.NewLineReader()
-	switch read, line, err := lineReader.Read(); {
+	switch read, line, err := in.ReadLine(); {
 	case err != nil:
 		return err
 	case read:
@@ -32,7 +30,7 @@ func Run(in Input) error {
 	}
 
 	fmt.Fprintln(in.IO.Writer, "Enter decrypted folder:")
-	switch read, line, err := lineReader.Read(); {
+	switch read, line, err := in.ReadLine(); {
 	case err != nil:
 		return err
 	case read:
