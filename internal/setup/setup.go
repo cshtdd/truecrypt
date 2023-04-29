@@ -14,7 +14,16 @@ type Input struct {
 	SettingsPath paths.Path
 }
 
-// func Run(io internal.IO) error {
+type lineScanner bufio.Scanner
+
+func (s *lineScanner) readLine() (read bool, line string, err error) {
+	scanner := (*bufio.Scanner)(s)
+	if read = scanner.Scan(); read {
+		line = scanner.Text()
+	}
+	return read, line, scanner.Err()
+}
+
 func Run(in Input) error {
 	s := settings.Settings{
 		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
@@ -22,22 +31,23 @@ func Run(in Input) error {
 
 	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
 
-	// TODO: refactor this out to a nicer interface
-	scanner := bufio.NewScanner(in.IO.Reader)
-	if scanner.Scan() {
-		s.EncryptedFile = paths.Path(scanner.Text())
-	}
-	if err := scanner.Err(); err != nil {
+	scanner := (*lineScanner)(bufio.NewScanner(in.IO.Reader))
+	switch read, line, err := scanner.readLine(); {
+	case err != nil:
 		return err
+	case read:
+		s.EncryptedFile = paths.Path(line)
 	}
-
 	if exists, err := s.EncryptedFile.Exists(); !exists {
 		return err
 	}
 
 	fmt.Fprintln(in.IO.Writer, "Enter decrypted folder:")
-	if scanner.Scan() {
-		s.DecryptedFolder = paths.Path(scanner.Text())
+	switch read, line, err := scanner.readLine(); {
+	case err != nil:
+		return err
+	case read:
+		s.DecryptedFolder = paths.Path(line)
 	}
 
 	fmt.Fprintf(in.IO.Writer, "Saving settings: %+v\n", s)
