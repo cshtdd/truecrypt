@@ -21,7 +21,7 @@ func (io *IO) ReadLine() (read bool, line string, err error) {
 	if read = io.scanner.Scan(); read {
 		line = io.scanner.Text()
 	}
-	return read, line, io.scanner.Err()
+	return read && len(line) > 0, line, io.scanner.Err()
 }
 
 func (io *IO) WriteLine(s string) {

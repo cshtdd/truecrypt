@@ -198,3 +198,63 @@ func TestRunFailsWhenEncryptedFileNotFound(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadsExistingSettings(t *testing.T) {
+	base := settings.Settings{
+		EncryptedFile:   helpers.CreateTemp(t),
+		DecryptedFolder: paths.Path("~/tmp/decrypted"),
+	}
+	diffEncryptedFile := settings.Settings{
+		EncryptedFile:   helpers.CreateTemp(t),
+		DecryptedFolder: paths.Path("~/tmp/decrypted"),
+	}
+	diffDecryptedFolder := settings.Settings{
+		EncryptedFile:   base.EncryptedFile,
+		DecryptedFolder: paths.Path("~/tmp/changed"),
+	}
+
+	tests := []struct {
+		input       settings.Settings
+		inputLines  []string
+		expected    settings.Settings
+		description string
+	}{
+		{base, []string{"", ""}, base, "Maintains settings untouched"},
+		{base, []string{diffEncryptedFile.EncryptedFile.String(), ""}, diffEncryptedFile, "Overrides encrypted file"},
+		{base, []string{"", diffDecryptedFolder.DecryptedFolder.String()}, diffDecryptedFolder, "Overrides encrypted file"},
+	}
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			// seed settings
+			settingsPath := helpers.CreateTemp(t)
+			test.input.Save(settingsPath)
+
+			// fake user input
+			var fakeOut bytes.Buffer
+			input := setup.Input{
+				IO: internal.IO{
+					Reader: strings.NewReader(
+						strings.Join(test.inputLines, "\n"),
+					),
+					Writer: &fakeOut,
+				},
+				SettingsPath: settingsPath,
+			}
+
+			// run the program
+			if err := setup.Run(input); err != nil {
+				t.Error("Run failed", err)
+			}
+
+			// validate saved settings
+			actual, err := settings.LoadFrom(settingsPath)
+			if err != nil {
+				t.Fatal("Cannot read saved settings", err)
+			}
+
+			if actual != test.expected {
+				t.Errorf("Saved settings don't match. want = %+v, got = %+v", test.expected, actual)
+			}
+		})
+	}
+}

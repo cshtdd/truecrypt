@@ -13,9 +13,37 @@ type Input struct {
 	SettingsPath paths.Path
 }
 
-func Run(in Input) error {
-	s := settings.Settings{
+func initSettings(in Input) (settings.Settings, error) {
+	defaultSettings := settings.Settings{
 		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
+	}
+
+	exists, err := in.SettingsPath.Exists()
+	if err != nil {
+		return defaultSettings, err
+	}
+
+	if !exists {
+		return defaultSettings, nil
+	}
+
+	existingSettings, err := settings.LoadFrom(in.SettingsPath)
+	if err != nil {
+		return defaultSettings, err
+	}
+
+	var emptySettings settings.Settings
+	if existingSettings == emptySettings {
+		return defaultSettings, nil
+	}
+
+	return existingSettings, nil
+}
+
+func Run(in Input) error {
+	s, err := initSettings(in)
+	if err != nil {
+		return err
 	}
 
 	in.WriteLine("Enter encrypted file:")
