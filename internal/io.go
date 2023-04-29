@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 )
 
@@ -21,4 +22,8 @@ func (io *IO) ReadLine() (read bool, line string, err error) {
 		line = io.scanner.Text()
 	}
 	return read, line, io.scanner.Err()
+}
+
+func (io *IO) WriteLine(s string) {
+	fmt.Fprintln(io.Writer, s)
 }

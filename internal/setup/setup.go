@@ -18,7 +18,7 @@ func Run(in Input) error {
 		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
 	}
 
-	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
+	in.WriteLine("Enter encrypted file:")
 	switch read, line, err := in.ReadLine(); {
 	case err != nil:
 		return err
@@ -29,7 +29,7 @@ func Run(in Input) error {
 		return err
 	}
 
-	fmt.Fprintln(in.IO.Writer, "Enter decrypted folder:")
+	in.WriteLine("Enter decrypted folder:")
 	switch read, line, err := in.ReadLine(); {
 	case err != nil:
 		return err
@@ -37,8 +37,8 @@ func Run(in Input) error {
 		s.DecryptedFolder = paths.Path(line)
 	}
 
-	fmt.Fprintf(in.IO.Writer, "Saving settings: %+v\n", s)
-	fmt.Fprintf(in.IO.Writer, "Settings Path: %s\n", in.SettingsPath.String())
+	in.WriteLine(fmt.Sprintf("Saving settings: %+v", s))
+	in.WriteLine(fmt.Sprintf("Settings Path: %s", in.SettingsPath.String()))
 
 	if err := s.Save(in.SettingsPath); err != nil {
 		return err
