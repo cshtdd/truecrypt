@@ -1,7 +1,6 @@
 package setup
 
 import (
-	"bufio"
 	"fmt"
 
 	"tddapps.com/truecrypt/internal"
@@ -14,16 +13,6 @@ type Input struct {
 	SettingsPath paths.Path
 }
 
-type lineScanner bufio.Scanner
-
-func (s *lineScanner) readLine() (read bool, line string, err error) {
-	scanner := (*bufio.Scanner)(s)
-	if read = scanner.Scan(); read {
-		line = scanner.Text()
-	}
-	return read, line, scanner.Err()
-}
-
 func Run(in Input) error {
 	s := settings.Settings{
 		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
@@ -31,8 +20,8 @@ func Run(in Input) error {
 
 	fmt.Fprintln(in.IO.Writer, "Enter encrypted file:")
 
-	scanner := (*lineScanner)(bufio.NewScanner(in.IO.Reader))
-	switch read, line, err := scanner.readLine(); {
+	lineReader := in.NewLineReader()
+	switch read, line, err := lineReader.Read(); {
 	case err != nil:
 		return err
 	case read:
@@ -43,7 +32,7 @@ func Run(in Input) error {
 	}
 
 	fmt.Fprintln(in.IO.Writer, "Enter decrypted folder:")
-	switch read, line, err := scanner.readLine(); {
+	switch read, line, err := lineReader.Read(); {
 	case err != nil:
 		return err
 	case read:
