@@ -221,7 +221,7 @@ func TestLoadsExistingSettings(t *testing.T) {
 	}{
 		{base, []string{"", ""}, base, "Maintains settings untouched"},
 		{base, []string{diffEncryptedFile.EncryptedFile.String(), ""}, diffEncryptedFile, "Overrides encrypted file"},
-		{base, []string{"", diffDecryptedFolder.DecryptedFolder.String()}, diffDecryptedFolder, "Overrides encrypted file"},
+		{base, []string{"", diffDecryptedFolder.DecryptedFolder.String()}, diffDecryptedFolder, "Overrides decrypted folder"},
 	}
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
@@ -254,6 +254,11 @@ func TestLoadsExistingSettings(t *testing.T) {
 
 			if actual != test.expected {
 				t.Errorf("Saved settings don't match. want = %+v, got = %+v", test.expected, actual)
+			}
+
+			expected := fmt.Sprintf("Loading settings from: %s\n", settingsPath)
+			if !strings.Contains(fakeOut.String(), expected) {
+				t.Errorf("Output contain mismatch. want = %s, got = %s", expected, fakeOut.String())
 			}
 		})
 	}

@@ -37,6 +37,7 @@ func initSettings(in Input) (settings.Settings, error) {
 		return defaultSettings, nil
 	}
 
+	in.WriteLine(fmt.Sprintf("Loading settings from: %s", in.SettingsPath))
 	return existingSettings, nil
 }
 
