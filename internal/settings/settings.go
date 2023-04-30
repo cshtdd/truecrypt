@@ -32,12 +32,7 @@ func DefaultDecryptedFolder() string {
 		return override
 	}
 
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic("Cannot read $HOME")
-	}
-
-	return filepath.Join(homeDir, "decrypted_folder/t")
+	return "~/decrypted_folder/t"
 }
 
 type Settings struct {

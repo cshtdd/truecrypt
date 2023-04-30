@@ -33,7 +33,7 @@ func TestDefaultSettingsPathEnvOverride(t *testing.T) {
 }
 
 func TestDefaultDecryptedFolder(t *testing.T) {
-	expected := fmt.Sprintf("%s/decrypted_folder/t", os.Getenv("HOME"))
+	expected := "~/decrypted_folder/t"
 	if p := settings.DefaultDecryptedFolder(); p != expected {
 		t.Errorf("DefaultDecryptedFolder() = %s, want %s", p, expected)
 	}
