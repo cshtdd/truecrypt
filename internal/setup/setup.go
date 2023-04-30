@@ -9,12 +9,7 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-type Input struct {
-	internal.IO
-	SettingsPath paths.Path
-}
-
-func loadSettings(in Input, defaultSettings settings.Settings) (existing bool, s settings.Settings) {
+func loadSettings(in internal.Input, defaultSettings settings.Settings) (existing bool, s settings.Settings) {
 	exists, err := in.SettingsPath.Exists()
 	if !exists || err != nil {
 		return false, defaultSettings
@@ -29,7 +24,7 @@ func loadSettings(in Input, defaultSettings settings.Settings) (existing bool, s
 	return true, existingSettings
 }
 
-func Run(in Input) error {
+func Run(in internal.Input) error {
 	// loading settings
 	defaultSettings := settings.Settings{
 		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),

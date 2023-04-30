@@ -24,6 +24,7 @@ func (p Path) Read() ([]byte, error) {
 }
 
 func (p Path) Write(data []byte) error {
+	// TODO: create parent directory if needed
 	const userRwOthersR = 0644
 	return os.WriteFile(p.expand(), data, userRwOthersR)
 }
