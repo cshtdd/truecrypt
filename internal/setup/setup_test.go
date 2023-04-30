@@ -52,15 +52,17 @@ func TestRunsOutputValidation(t *testing.T) {
 				DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
 				EncryptedFile:   test.encryptedPath,
 			}
-			lines := strings.Join([]string{
-				"Enter encrypted file:",
-				"Enter decrypted folder:",
-				fmt.Sprintf("Saving settings: %+v", expectedSettings),
-				fmt.Sprintf("Settings Path: %s", test.settingsPath.String()),
-				"",
-			}, "\n")
-			if out := fakeOut.String(); out != lines {
-				t.Errorf("Run() = %s, want %s", out, lines)
+			expectedLines := []string{
+				"Enter encrypted file:\n",
+				"Enter decrypted folder:\n",
+				fmt.Sprintf("\tassumes \"%s\" if blank\n", settings.DefaultDecryptedFolder()),
+				fmt.Sprintf("Saving settings: %+v\n", expectedSettings),
+				fmt.Sprintf("Settings Path: %s\n", test.settingsPath.String()),
+			}
+			for _, line := range expectedLines {
+				if !strings.Contains(fakeOut.String(), line) {
+					t.Fatalf("Run() = %s, want %s", fakeOut.String(), line)
+				}
 			}
 		})
 	}
@@ -256,9 +258,16 @@ func TestLoadsExistingSettings(t *testing.T) {
 				t.Errorf("Saved settings don't match. want = %+v, got = %+v", test.expected, actual)
 			}
 
-			expected := fmt.Sprintf("Loading settings from: %s\n", settingsPath)
-			if !strings.Contains(fakeOut.String(), expected) {
-				t.Errorf("Output contain mismatch. want = %s, got = %s", expected, fakeOut.String())
+			// validate output
+			expectedLines := []string{
+				fmt.Sprintf("Loading settings from: %s\n", settingsPath),
+				fmt.Sprintf("Enter encrypted file:\n\tassumes \"%s\" if blank\n", test.input.EncryptedFile),
+				fmt.Sprintf("Enter decrypted folder:\n\tassumes \"%s\" if blank\n", test.input.DecryptedFolder),
+			}
+			for _, line := range expectedLines {
+				if !strings.Contains(fakeOut.String(), line) {
+					t.Fatalf("Output contain mismatch. want = %s, got = %s", line, fakeOut.String())
+				}
 			}
 		})
 	}
