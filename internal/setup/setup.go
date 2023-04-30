@@ -14,27 +14,19 @@ type Input struct {
 	SettingsPath paths.Path
 }
 
-func loadSettings(in Input, defaultSettings settings.Settings) (existing bool, s settings.Settings, err error) {
+func loadSettings(in Input, defaultSettings settings.Settings) (existing bool, s settings.Settings) {
 	exists, err := in.SettingsPath.Exists()
-	if err != nil {
-		return false, defaultSettings, err
-	}
-
-	if !exists {
-		return false, defaultSettings, nil
-	}
-
-	existingSettings, err := settings.LoadFrom(in.SettingsPath)
-	if err != nil {
-		return false, defaultSettings, err
+	if !exists || err != nil {
+		return false, defaultSettings
 	}
 
 	var emptySettings settings.Settings
-	if existingSettings == emptySettings {
-		return false, defaultSettings, nil
+	existingSettings, err := settings.LoadFrom(in.SettingsPath)
+	if err != nil || existingSettings == emptySettings {
+		return false, defaultSettings
 	}
 
-	return true, existingSettings, nil
+	return true, existingSettings
 }
 
 func Run(in Input) error {
@@ -42,10 +34,7 @@ func Run(in Input) error {
 	defaultSettings := settings.Settings{
 		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
 	}
-	existingSettings, s, err := loadSettings(in, defaultSettings)
-	if err != nil {
-		return err
-	}
+	existingSettings, s := loadSettings(in, defaultSettings)
 	if existingSettings {
 		in.WriteLine(fmt.Sprintf("Loading settings from: %s", in.SettingsPath))
 	}
