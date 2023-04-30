@@ -272,3 +272,26 @@ func TestLoadsExistingSettings(t *testing.T) {
 		})
 	}
 }
+
+func TestRunFailsWhenDecryptedFolderIsBlank(t *testing.T) {
+	// seed settings with no decrypted folder
+	settingsPath := helpers.CreateTemp(t)
+	settings := settings.Settings{
+		DecryptedFolder: "",
+		EncryptedFile:   helpers.CreateTemp(t),
+	}
+	settings.Save(settingsPath)
+
+	var fakeOut bytes.Buffer
+	input := setup.Input{
+		IO: internal.IO{
+			Reader: strings.NewReader(helpers.CreateTemp(t).String()),
+			Writer: &fakeOut,
+		},
+		SettingsPath: settingsPath,
+	}
+
+	if err := setup.Run(input); err == nil {
+		t.Error("Expected Error")
+	}
+}

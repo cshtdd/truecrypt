@@ -1,6 +1,7 @@
 package setup
 
 import (
+	"errors"
 	"fmt"
 
 	"tddapps.com/truecrypt/internal"
@@ -76,6 +77,9 @@ func Run(in Input) error {
 		return err
 	case read:
 		s.DecryptedFolder = paths.Path(line)
+	}
+	if len(s.DecryptedFolder) == 0 {
+		return errors.New("decrypted folder cannot be blank")
 	}
 
 	// savings settings
