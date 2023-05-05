@@ -44,28 +44,31 @@ func main() {
 
 	switch {
 	case flagSetup:
-		fmt.Println("Setup")
+		i.WriteLine("Setup")
 		if err := setup.Run(i); err != nil {
-			fmt.Println("Setup error", err)
+			i.WriteLine(fmt.Sprintf("Setup error %s", err))
 			exitCode = 2
 		}
 	case flagDecrypt:
-		fmt.Println("Decrypt")
+		i.WriteLine("Decrypt")
 		// TODO: implement this
 	case flagEncrypt:
-		fmt.Println("Encrypt")
+		i.WriteLine("Encrypt")
 		// TODO: implement this
 	case flagClean:
-		fmt.Println("Clean")
+		i.WriteLine("Clean")
 		if err := clean.Run(i); err != nil {
-			fmt.Println("Cleanr error", err)
+			i.WriteLine(fmt.Sprintf("Clean error %s", err))
 			exitCode = 5
 		}
 	case flagCleanSettings:
-		fmt.Println("Clean Settings")
-		// TODO: implement this
+		i.WriteLine(fmt.Sprintf("Clean Settings at: %s", i.SettingsPath))
+		if err := i.SettingsPath.Delete(); err != nil {
+			i.WriteLine(fmt.Sprintf("Clean settings error %s", err))
+			exitCode = 6
+		}
 	default:
-		fmt.Println("Action missing")
+		i.WriteLine("Action missing")
 		flag.Usage()
 		exitCode = 1
 	}
