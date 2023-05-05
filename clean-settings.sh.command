@@ -1,7 +1,4 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(dirname -- "$0")"
-
-pushd $SCRIPT_DIR
-./truecrypt -cleanSettings
-popd
+$SCRIPT_DIR/truecrypt -cleanSettings

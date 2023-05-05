@@ -5,7 +5,6 @@ package settings
 import (
 	"encoding/json"
 	"os"
-	"path/filepath"
 
 	"tddapps.com/truecrypt/internal/paths"
 )
@@ -17,12 +16,7 @@ func DefaultSettingsPath() string {
 		return override
 	}
 
-	pwd, err := os.Getwd()
-	if err != nil {
-		panic("Cannot read PWD")
-	}
-
-	return filepath.Join(pwd, ".settings.json")
+	return "~/.config/truecrypt/settings.json"
 }
 
 // Reads the default decrypted folder.

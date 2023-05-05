@@ -1,7 +1,6 @@
 package settings_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -11,12 +10,7 @@ import (
 )
 
 func TestDefaultSettingsPath(t *testing.T) {
-	pwd, err := os.Getwd()
-	if err != nil {
-		t.Fatal("Cannot read pwd", err)
-	}
-
-	expected := fmt.Sprintf("%s/.settings.json", pwd)
+	expected := "~/.config/truecrypt/settings.json"
 	if p := settings.DefaultSettingsPath(); p != expected {
 		t.Errorf("DefaultSettingsPath() = %s, want %s", p, expected)
 	}
