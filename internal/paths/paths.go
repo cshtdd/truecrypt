@@ -41,6 +41,10 @@ func (p Path) Exists() (bool, error) {
 	}
 }
 
+func (p Path) Delete() error {
+	return os.RemoveAll(p.expand())
+}
+
 func (p Path) Base() string {
 	return filepath.Base(p.expand())
 }
