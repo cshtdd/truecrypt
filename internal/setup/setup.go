@@ -45,8 +45,12 @@ func Run(in internal.Input) error {
 	case read:
 		s.EncryptedFile = paths.Path(line)
 	}
-	if exists, err := s.EncryptedFile.Exists(); !exists {
+	exists, err := s.EncryptedFile.Exists()
+	if err != nil {
 		return err
+	}
+	if !exists {
+		return errors.New("encryped file does not exist")
 	}
 
 	// reading decrypted folder

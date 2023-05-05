@@ -24,17 +24,21 @@ func (p Path) Read() ([]byte, error) {
 }
 
 func (p Path) Write(data []byte) error {
-	// TODO: create parent directory if needed
+	fullPath := p.expand()
+	const userRwOthersNone = 0700 // tmp files use this forcibly
+	os.MkdirAll(filepath.Dir(fullPath), userRwOthersNone)
 	const userRwOthersR = 0644
-	return os.WriteFile(p.expand(), data, userRwOthersR)
+	return os.WriteFile(fullPath, data, userRwOthersR)
 }
 
 func (p Path) Exists() (bool, error) {
-	if _, err := os.Stat(p.expand()); err != nil {
+	if _, err := os.Stat(p.expand()); err == nil {
+		return true, nil
+	} else if os.IsNotExist(err) {
+		return false, nil
+	} else {
 		return false, err
 	}
-
-	return true, nil
 }
 
 func (p Path) Base() string {
