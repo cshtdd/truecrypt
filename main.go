@@ -7,6 +7,7 @@ import (
 
 	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/clean"
+	"tddapps.com/truecrypt/internal/encryption"
 	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 	"tddapps.com/truecrypt/internal/setup"
@@ -46,27 +47,38 @@ func main() {
 
 	switch {
 	case flagSetup:
-		i.WriteLine("Setup")
+		program := "Setup"
+		i.WriteLine(program)
 		if err := setup.Run(i); err != nil {
-			i.WriteLine(fmt.Sprintf("Setup error %s", err))
+			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
 			exitCode = 2
 		}
 	case flagDecrypt:
-		i.WriteLine("Decrypt")
-		// TODO: implement this
+		program := "Decrypt"
+		i.WriteLine(program)
+		if err := encryption.Decrypt(i); err != nil {
+			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
+			exitCode = 3
+		}
 	case flagEncrypt:
-		i.WriteLine("Encrypt")
-		// TODO: implement this
+		program := "Encrypt"
+		i.WriteLine(program)
+		if err := encryption.Encrypt(i); err != nil {
+			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
+			exitCode = 4
+		}
 	case flagClean:
-		i.WriteLine("Clean")
+		program := "Clean"
+		i.WriteLine(program)
 		if err := clean.Run(i); err != nil {
-			i.WriteLine(fmt.Sprintf("Clean error %s", err))
+			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
 			exitCode = 5
 		}
 	case flagCleanSettings:
-		i.WriteLine(fmt.Sprintf("Clean Settings at: %s", i.SettingsPath))
+		program := "Clean Settings"
+		i.WriteLine(fmt.Sprintf("%s at: %s", program, i.SettingsPath))
 		if err := i.SettingsPath.Delete(); err != nil {
-			i.WriteLine(fmt.Sprintf("Clean settings error %s", err))
+			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
 			exitCode = 6
 		}
 	default:
