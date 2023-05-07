@@ -76,8 +76,8 @@ func main() {
 		}
 	case flagCleanSettings:
 		program := "Clean Settings"
-		i.WriteLine(fmt.Sprintf("%s at: %s", program, i.SettingsPath))
-		if err := i.SettingsPath.Delete(); err != nil {
+		i.WriteLine(program)
+		if err := clean.CleanSettings(i); err != nil {
 			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
 			exitCode = 6
 		}
