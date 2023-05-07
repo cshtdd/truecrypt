@@ -18,6 +18,7 @@ var flagDecrypt bool
 var flagClean bool
 var flagCleanSettings bool
 var flagSettingsPath string
+var flagPause bool
 
 func init() {
 	// Commands
@@ -29,6 +30,7 @@ func init() {
 
 	// Other config
 	flag.StringVar(&flagSettingsPath, "settings", settings.DefaultSettingsPath(), "[Optional] Settings file path")
+	flag.BoolVar(&flagPause, "pause", false, "[Optional] Pause at the end")
 
 	flag.Parse()
 }
@@ -71,6 +73,10 @@ func main() {
 		i.WriteLine("Action missing")
 		flag.Usage()
 		exitCode = 1
+	}
+
+	if flagPause {
+		i.Pause()
 	}
 
 	if exitCode != Success {

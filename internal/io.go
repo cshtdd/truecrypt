@@ -27,3 +27,8 @@ func (io *IO) ReadLine() (read bool, line string, err error) {
 func (io *IO) WriteLine(s string) {
 	fmt.Fprintln(io.Writer, s)
 }
+
+func (io *IO) Pause() {
+	io.WriteLine("Press any key to continue...")
+	io.ReadLine()
+}
