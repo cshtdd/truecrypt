@@ -1,6 +1,8 @@
 package internal
 
-import "tddapps.com/truecrypt/internal/paths"
+import (
+	"tddapps.com/truecrypt/internal/paths"
+)
 
 type Input struct {
 	IO

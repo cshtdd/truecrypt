@@ -21,6 +21,8 @@ var flagCleanSettings bool
 var flagSettingsPath string
 var flagPause bool
 
+var input *internal.Input
+
 func init() {
 	// Commands
 	flag.BoolVar(&flagSetup, "setup", false, "Setup settings")
@@ -34,64 +36,68 @@ func init() {
 	flag.BoolVar(&flagPause, "pause", false, "[Optional] Pause at the end")
 
 	flag.Parse()
-}
 
-func main() {
-	const Success = 0
-	exitCode := Success
-
-	i := internal.Input{
+	// Create Program Input
+	input = &internal.Input{
 		IO:           internal.IO{Reader: os.Stdin, Writer: os.Stdout},
 		SettingsPath: paths.Path(flagSettingsPath),
 	}
+}
+
+type ExitCode int
+
+const Success ExitCode = 0
+
+type Program struct {
+	Input     internal.Input
+	Name      string
+	ErrorCode ExitCode
+}
+
+func NewProgram(name string, errorCode ExitCode) *Program {
+	return &Program{
+		Input:     *input,
+		Name:      name,
+		ErrorCode: errorCode,
+	}
+}
+
+func (p *Program) Run(program func(internal.Input) error) ExitCode {
+	p.Input.WriteLine(p.Name)
+
+	if err := program(p.Input); err != nil {
+		p.Input.WriteLine(fmt.Sprintf("%s error %s", p.Name, err))
+		return p.ErrorCode
+	}
+
+	return Success
+}
+
+func main() {
+	exitCode := Success
 
 	switch {
 	case flagSetup:
-		program := "Setup"
-		i.WriteLine(program)
-		if err := setup.Run(i); err != nil {
-			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
-			exitCode = 2
-		}
+		exitCode = NewProgram("Setup", 2).Run(setup.Run)
 	case flagDecrypt:
-		program := "Decrypt"
-		i.WriteLine(program)
-		if err := encryption.Decrypt(i); err != nil {
-			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
-			exitCode = 3
-		}
+		exitCode = NewProgram("Decrypt", 3).Run(encryption.Decrypt)
 	case flagEncrypt:
-		program := "Encrypt"
-		i.WriteLine(program)
-		if err := encryption.Encrypt(i); err != nil {
-			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
-			exitCode = 4
-		}
+		exitCode = NewProgram("Encrypt", 4).Run(encryption.Encrypt)
 	case flagClean:
-		program := "Clean"
-		i.WriteLine(program)
-		if err := clean.Run(i); err != nil {
-			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
-			exitCode = 5
-		}
+		exitCode = NewProgram("Clean", 5).Run(clean.Run)
 	case flagCleanSettings:
-		program := "Clean Settings"
-		i.WriteLine(program)
-		if err := clean.CleanSettings(i); err != nil {
-			i.WriteLine(fmt.Sprintf("%s error %s", program, err))
-			exitCode = 6
-		}
+		exitCode = NewProgram("Clean Settings", 6).Run(clean.CleanSettings)
 	default:
-		i.WriteLine("Action missing")
+		input.WriteLine("Action missing")
 		flag.Usage()
 		exitCode = 1
 	}
 
 	if flagPause {
-		i.Pause()
+		input.Pause()
 	}
 
 	if exitCode != Success {
-		os.Exit(exitCode)
+		os.Exit(int(exitCode))
 	}
 }
