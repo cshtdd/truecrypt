@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -46,8 +47,6 @@ func init() {
 
 type ExitCode int
 
-const Success ExitCode = 0
-
 type Program struct {
 	Input     internal.Input
 	Name      string
@@ -62,42 +61,39 @@ func NewProgram(name string, errorCode ExitCode) *Program {
 	}
 }
 
-func (p *Program) Run(program func(internal.Input) error) ExitCode {
+func (p *Program) Run(program func(internal.Input) error) {
 	p.Input.WriteLine(p.Name)
 
-	if err := program(p.Input); err != nil {
+	err := program(p.Input)
+	if err != nil {
 		p.Input.WriteLine(fmt.Sprintf("%s error %s", p.Name, err))
-		return p.ErrorCode
-	}
-
-	return Success
-}
-
-func main() {
-	exitCode := Success
-
-	switch {
-	case flagSetup:
-		exitCode = NewProgram("Setup", 2).Run(setup.Run)
-	case flagDecrypt:
-		exitCode = NewProgram("Decrypt", 3).Run(encryption.Decrypt)
-	case flagEncrypt:
-		exitCode = NewProgram("Encrypt", 4).Run(encryption.Encrypt)
-	case flagClean:
-		exitCode = NewProgram("Clean", 5).Run(clean.Run)
-	case flagCleanSettings:
-		exitCode = NewProgram("Clean Settings", 6).Run(clean.CleanSettings)
-	default:
-		input.WriteLine("Action missing")
-		flag.Usage()
-		exitCode = 1
 	}
 
 	if flagPause {
 		input.Pause()
 	}
 
-	if exitCode != Success {
-		os.Exit(int(exitCode))
+	if err != nil {
+		os.Exit(int(p.ErrorCode))
+	}
+}
+
+func main() {
+	switch {
+	case flagSetup:
+		NewProgram("Setup", 2).Run(setup.Run)
+	case flagDecrypt:
+		NewProgram("Decrypt", 3).Run(encryption.Decrypt)
+	case flagEncrypt:
+		NewProgram("Encrypt", 4).Run(encryption.Encrypt)
+	case flagClean:
+		NewProgram("Clean", 5).Run(clean.Run)
+	case flagCleanSettings:
+		NewProgram("Clean Settings", 6).Run(clean.CleanSettings)
+	default:
+		NewProgram("Action Missing", 1).Run(func(i internal.Input) error {
+			flag.Usage()
+			return errors.New("empty arguments")
+		})
 	}
 }
