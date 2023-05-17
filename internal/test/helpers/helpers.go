@@ -57,3 +57,28 @@ func createTempDirInDir(t *testing.T, dir string) paths.Path {
 	})
 	return paths.Path(result)
 }
+
+func EnsureExists(t *testing.T, p paths.Path, expected bool) {
+	exists, err := p.Exists()
+	if err != nil {
+		t.Fatalf("Unexpected error checking existence path: %s, err: %s", p, err)
+	}
+	if exists != expected {
+		t.Fatalf("File exist mismatch path: %s, want: %t, got: %t", p, expected, exists)
+	}
+}
+
+func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
+	files := []paths.Path{
+		paths.Path(filepath.Join(dir.String(), "subdir1/subdir2", "aaa.txt")),
+		paths.Path(filepath.Join(dir.String(), "subdir1/subdir2", "bbb.txt")),
+		paths.Path(filepath.Join(dir.String(), "subdir3", "ccc.txt")),
+	}
+	for _, p := range files {
+		EnsureExists(t, p, false)
+		if err := p.Write([]byte("aaaa")); err != nil {
+			t.Errorf("Write failed path: %s, err: %s", p.String(), err)
+		}
+		EnsureExists(t, p, true)
+	}
+}
