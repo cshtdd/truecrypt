@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"bytes"
+	"crypto/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -68,17 +70,81 @@ func EnsureExists(t *testing.T, p paths.Path, expected bool) {
 	}
 }
 
-func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
-	files := []paths.Path{
+func getSamplePaths(dir paths.Path) []paths.Path {
+	return []paths.Path{
 		paths.Path(filepath.Join(dir.String(), "subdir1/subdir2", "aaa.txt")),
 		paths.Path(filepath.Join(dir.String(), "subdir1/subdir2", "bbb.txt")),
 		paths.Path(filepath.Join(dir.String(), "subdir3", "ccc.txt")),
 	}
-	for _, p := range files {
+}
+
+func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
+	for _, p := range getSamplePaths(dir) {
 		EnsureExists(t, p, false)
-		if err := p.Write([]byte("aaaa")); err != nil {
+		var data []byte = make([]byte, 15)
+		if _, err := rand.Read(data); err != nil {
+			t.Errorf("Random data generation failed path: %s, err: %s", p.String(), err)
+		}
+		if err := p.Write(data); err != nil {
 			t.Errorf("Write failed path: %s, err: %s", p.String(), err)
 		}
 		EnsureExists(t, p, true)
+	}
+}
+
+func EnsureSamplePathsMatch(t *testing.T, dirA paths.Path, dirB paths.Path, shouldMatch bool) {
+	filesB := getSamplePaths(dirB)
+
+	for index, fileA := range getSamplePaths(dirA) {
+		fileB := filesB[index]
+
+		// check existence
+		existsA, err := fileA.Exists()
+		if err != nil {
+			t.Fatalf("Unexpected error checking existence path: %s, err: %s", fileA, err)
+		}
+
+		existsB, err := fileB.Exists()
+		if err != nil {
+			t.Fatalf("Unexpected error checking existence path: %s, err: %s", fileB, err)
+		}
+
+		if existsA != existsB { // mismatch
+			if !shouldMatch { // the test was expecting a mismatch
+				return // return early to pass the test
+			} else {
+				t.Fatalf(
+					"File existence mismatch. a: %s, a_exists: %t, b: %s, b_exists: %t",
+					fileA, existsA, fileB, existsB,
+				)
+			}
+		}
+
+		if existsA && existsB {
+			bytesA, err := fileA.Read()
+			if err != nil {
+				t.Fatalf("Unexpected error reading fileA: %s", fileA)
+			}
+
+			bytesB, err := fileB.Read()
+			if err != nil {
+				t.Fatalf("Unexpected error reading fileB: %s", fileB)
+			}
+
+			if !bytes.Equal(bytesA, bytesB) { // mismatch
+				if !shouldMatch { // the test was expecting a mismatch
+					return // return early to pass the test
+				} else {
+					t.Fatalf(
+						"File contents mismatch. a: %s, a_data: %s, b: %s, b_data: %s",
+						fileA, bytesA, fileB, bytesB,
+					)
+				}
+			}
+		}
+	}
+
+	if !shouldMatch {
+		t.Fatalf("Directories match. want false, a: %s, b: %s", dirA, dirB)
 	}
 }

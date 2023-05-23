@@ -79,3 +79,25 @@ func TestPathDelete(t *testing.T) {
 		})
 	}
 }
+
+func TestPathComparisonEmptyDirectoriesMatch(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	dirB := helpers.CreateTempDir(t)
+	helpers.EnsureSamplePathsMatch(t, dirA, dirB, true)
+}
+
+func TestPathComparisonAlwaysMatchItself(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirA)
+	helpers.EnsureSamplePathsMatch(t, dirA, dirA, true)
+}
+
+func TestPathComparisonSamplesAreAlwaysUnique(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirA)
+
+	dirB := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirB)
+
+	helpers.EnsureSamplePathsMatch(t, dirA, dirB, false)
+}
