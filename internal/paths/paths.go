@@ -1,6 +1,7 @@
 package paths
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,4 +52,54 @@ func (p Path) Base() string {
 
 func (p Path) String() string {
 	return string(p)
+}
+
+type MatchType int
+
+const (
+	Mismatch MatchType = iota
+	Match
+)
+
+func (m MatchType) String() string {
+	switch m {
+	case Match:
+		return "Match"
+	default:
+		return "Mismatch"
+	}
+}
+
+func (p Path) Matches(fileB Path) (MatchType, error) {
+	existsA, err := p.Exists()
+	if err != nil {
+		return Mismatch, err
+	}
+
+	existsB, err := fileB.Exists()
+	if err != nil {
+		return Mismatch, err
+	}
+
+	if existsA != existsB { // mismatch
+		return Mismatch, nil
+	}
+
+	if existsA && existsB {
+		bytesA, err := p.Read()
+		if err != nil {
+			return Mismatch, err
+		}
+
+		bytesB, err := fileB.Read()
+		if err != nil {
+			return Mismatch, err
+		}
+
+		if !bytes.Equal(bytesA, bytesB) { // mismatch
+			return Mismatch, nil
+		}
+	}
+
+	return Match, nil
 }

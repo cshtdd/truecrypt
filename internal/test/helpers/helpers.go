@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"bytes"
 	"crypto/rand"
 	"os"
 	"path/filepath"
@@ -92,72 +91,18 @@ func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
 	}
 }
 
-type MatchType int
-
-const (
-	Err MatchType = iota
-	Mismatch
-	Match
-)
-
-func (m MatchType) String() string {
-	switch m {
-	case Match:
-		return "Match"
-	case Mismatch:
-		return "Mismatch"
-	default:
-		return "Err"
-	}
-}
-
-func SampleDirectoriesMatch(t *testing.T, dirA paths.Path, dirB paths.Path) MatchType {
+func SampleDirectoriesMatch(t *testing.T, dirA paths.Path, dirB paths.Path) paths.MatchType {
 	filesB := getSamplePaths(dirB)
 
 	for index, fileA := range getSamplePaths(dirA) {
 		fileB := filesB[index]
-		if m := FilesMatch(t, fileA, fileB); m != Match {
+		switch m, err := fileA.Matches(fileB); {
+		case err != nil:
+			t.Fatalf("Unexpected error comparing files a: %s, b:%s, err: %s", fileA, fileB, err)
+		case m != paths.Match:
 			return m
 		}
 	}
 
-	return Match
-}
-
-func FilesMatch(t *testing.T, fileA paths.Path, fileB paths.Path) MatchType {
-	existsA, err := fileA.Exists()
-	if err != nil {
-		t.Errorf("Unexpected error checking existence path: %s, err: %s", fileA, err)
-		return Err
-	}
-
-	existsB, err := fileB.Exists()
-	if err != nil {
-		t.Errorf("Unexpected error checking existence path: %s, err: %s", fileB, err)
-		return Err
-	}
-
-	if existsA != existsB { // mismatch
-		return Mismatch
-	}
-
-	if existsA && existsB {
-		bytesA, err := fileA.Read()
-		if err != nil {
-			t.Errorf("Unexpected error reading fileA: %s", fileA)
-			return Err
-		}
-
-		bytesB, err := fileB.Read()
-		if err != nil {
-			t.Errorf("Unexpected error reading fileB: %s", fileB)
-			return Err
-		}
-
-		if !bytes.Equal(bytesA, bytesB) { // mismatch
-			return Mismatch
-		}
-	}
-
-	return Match
+	return paths.Match
 }
