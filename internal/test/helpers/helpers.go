@@ -100,70 +100,61 @@ const (
 	Match
 )
 
-func EnsureSamplePathsMatch(t *testing.T, dirA paths.Path, dirB paths.Path, shouldMatch bool) MatchType {
+func (m MatchType) String() string {
+	switch m {
+	case Match:
+		return "Match"
+	case Mismatch:
+		return "Mismatch"
+	default:
+		return "Err"
+	}
+}
+
+func SampleDirectoriesMatch(t *testing.T, dirA paths.Path, dirB paths.Path) MatchType {
 	filesB := getSamplePaths(dirB)
 
 	for index, fileA := range getSamplePaths(dirA) {
 		fileB := filesB[index]
-		switch m := EnsureFilesMatch(t, fileA, fileB, shouldMatch); {
-		case m == Match:
-			if !shouldMatch { // the test was expected a mismatch
-				break
-			}
-		default:
+		if m := FilesMatch(t, fileA, fileB); m != Match {
 			return m
 		}
 	}
 
-	if !shouldMatch {
-		t.Fatalf("Directories match. want false, a: %s, b: %s", dirA, dirB)
-	}
 	return Match
 }
 
-func EnsureFilesMatch(t *testing.T, fileA paths.Path, fileB paths.Path, shouldMatch bool) MatchType {
+func FilesMatch(t *testing.T, fileA paths.Path, fileB paths.Path) MatchType {
 	existsA, err := fileA.Exists()
 	if err != nil {
-		t.Fatalf("Unexpected error checking existence path: %s, err: %s", fileA, err)
+		t.Errorf("Unexpected error checking existence path: %s, err: %s", fileA, err)
 		return Err
 	}
 
 	existsB, err := fileB.Exists()
 	if err != nil {
-		t.Fatalf("Unexpected error checking existence path: %s, err: %s", fileB, err)
+		t.Errorf("Unexpected error checking existence path: %s, err: %s", fileB, err)
 		return Err
 	}
 
 	if existsA != existsB { // mismatch
-		if shouldMatch { // the test was expecting match
-			t.Fatalf(
-				"File existence mismatch. a: %s, a_exists: %t, b: %s, b_exists: %t",
-				fileA, existsA, fileB, existsB,
-			)
-		}
 		return Mismatch
 	}
 
 	if existsA && existsB {
 		bytesA, err := fileA.Read()
 		if err != nil {
-			t.Fatalf("Unexpected error reading fileA: %s", fileA)
+			t.Errorf("Unexpected error reading fileA: %s", fileA)
 			return Err
 		}
 
 		bytesB, err := fileB.Read()
 		if err != nil {
-			t.Fatalf("Unexpected error reading fileB: %s", fileB)
+			t.Errorf("Unexpected error reading fileB: %s", fileB)
 			return Err
 		}
 
 		if !bytes.Equal(bytesA, bytesB) { // mismatch
-			if shouldMatch { // the test was expecting a match
-				t.Fatalf(
-					"File contents mismatch. a: %s, a_data: %s, b: %s, b_data: %s",
-					fileA, bytesA, fileB, bytesB,
-				)
-			}
 			return Mismatch
 		}
 	}

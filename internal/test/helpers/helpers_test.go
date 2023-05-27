@@ -83,13 +83,23 @@ func TestPathDelete(t *testing.T) {
 func TestPathComparisonEmptyDirectoriesMatch(t *testing.T) {
 	dirA := helpers.CreateTempDir(t)
 	dirB := helpers.CreateTempDir(t)
-	helpers.EnsureSamplePathsMatch(t, dirA, dirB, true)
+	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != helpers.Match {
+		t.Errorf(
+			"Expected directories a: %s, b: %s to: %d got: %d",
+			dirA, dirB, helpers.Match, m,
+		)
+	}
 }
 
 func TestPathComparisonAlwaysMatchItself(t *testing.T) {
 	dirA := helpers.CreateTempDir(t)
 	helpers.CreateSampleNestedStructure(t, dirA)
-	helpers.EnsureSamplePathsMatch(t, dirA, dirA, true)
+	if m := helpers.SampleDirectoriesMatch(t, dirA, dirA); m != helpers.Match {
+		t.Errorf(
+			"Expected directories %s to match itself got: %d",
+			dirA, m,
+		)
+	}
 }
 
 func TestPathComparisonSamplesAreAlwaysUnique(t *testing.T) {
@@ -99,5 +109,10 @@ func TestPathComparisonSamplesAreAlwaysUnique(t *testing.T) {
 	dirB := helpers.CreateTempDir(t)
 	helpers.CreateSampleNestedStructure(t, dirB)
 
-	helpers.EnsureSamplePathsMatch(t, dirA, dirB, false)
+	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != helpers.Mismatch {
+		t.Errorf(
+			"Expected directories a: %s, b: %s to: %d got: %d",
+			dirA, dirB, helpers.Mismatch, m,
+		)
+	}
 }
