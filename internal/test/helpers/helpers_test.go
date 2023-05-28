@@ -119,6 +119,9 @@ func TestPathDelete(t *testing.T) {
 }
 
 func TestPathMoveFile(t *testing.T) {
+	existingFile := helpers.CreateTemp(t)
+	helpers.WriteRandomData(t, existingFile, helpers.GenerateRandomData(t))
+
 	tests := []struct {
 		src         paths.Path
 		dest        paths.Path
@@ -148,6 +151,12 @@ func TestPathMoveFile(t *testing.T) {
 			paths.Path(fmt.Sprintf("%s/dir1/dir2/dir3/aaa.txt", helpers.CreateTempDir(t))),
 			false,
 			"Creates directory structure",
+		},
+		{
+			helpers.CreateTemp(t),
+			existingFile,
+			false,
+			"Overwrites existing files",
 		},
 	}
 
