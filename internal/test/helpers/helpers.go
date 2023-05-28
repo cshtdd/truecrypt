@@ -80,15 +80,24 @@ func getSamplePaths(dir paths.Path) []paths.Path {
 func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
 	for _, p := range getSamplePaths(dir) {
 		EnsureExists(t, p, false)
-		var data []byte = make([]byte, 15)
-		if _, err := rand.Read(data); err != nil {
-			t.Errorf("Random data generation failed path: %s, err: %s", p.String(), err)
-		}
-		if err := p.Write(data); err != nil {
-			t.Errorf("Write failed path: %s, err: %s", p.String(), err)
-		}
+		data := GenerateRandomData(t)
+		WriteRandomData(t, p, data)
 		EnsureExists(t, p, true)
 	}
+}
+
+func WriteRandomData(t *testing.T, p paths.Path, data []byte) {
+	if err := p.Write(data); err != nil {
+		t.Errorf("Write failed path: %s, err: %s", p.String(), err)
+	}
+}
+
+func GenerateRandomData(t *testing.T) []byte {
+	var data = make([]byte, 15)
+	if _, err := rand.Read(data); err != nil {
+		t.Errorf("Random data generation failed err: %s", err)
+	}
+	return data
 }
 
 func SampleDirectoriesMatch(t *testing.T, dirA paths.Path, dirB paths.Path) paths.MatchType {

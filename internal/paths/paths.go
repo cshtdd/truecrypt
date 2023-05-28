@@ -24,12 +24,19 @@ func (p Path) Read() ([]byte, error) {
 	return os.ReadFile(p.expand())
 }
 
+const userRwOthersNone = 0700 // tmp files use this forcibly
+
 func (p Path) Write(data []byte) error {
 	fullPath := p.expand()
-	const userRwOthersNone = 0700 // tmp files use this forcibly
 	os.MkdirAll(filepath.Dir(fullPath), userRwOthersNone)
 	const userRwOthersR = 0644
 	return os.WriteFile(fullPath, data, userRwOthersR)
+}
+
+func (p Path) MoveFile(dest Path) error {
+	fullDestPath := dest.expand()
+	os.MkdirAll(filepath.Dir(fullDestPath), userRwOthersNone)
+	return os.Rename(p.expand(), fullDestPath)
 }
 
 func (p Path) Exists() (bool, error) {

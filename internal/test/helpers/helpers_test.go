@@ -1,6 +1,7 @@
 package helpers_test
 
 import (
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -30,6 +31,43 @@ func TestCreateTempDir(t *testing.T) {
 
 	if exists, err := tmp.Exists(); !exists {
 		t.Errorf("Tmp dir does not exist %s, err %s", tmp, err)
+	}
+}
+
+func TestPathComparisonEmptyDirectoriesMatch(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	dirB := helpers.CreateTempDir(t)
+	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != paths.Match {
+		t.Errorf(
+			"Expected directories a: %s, b: %s to: %d got: %d",
+			dirA, dirB, paths.Match, m,
+		)
+	}
+}
+
+func TestPathComparisonAlwaysMatchItself(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirA)
+	if m := helpers.SampleDirectoriesMatch(t, dirA, dirA); m != paths.Match {
+		t.Errorf(
+			"Expected directories %s to match itself got: %d",
+			dirA, m,
+		)
+	}
+}
+
+func TestPathComparisonSamplesAreAlwaysUnique(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirA)
+
+	dirB := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirB)
+
+	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != paths.Mismatch {
+		t.Errorf(
+			"Expected directories a: %s, b: %s to: %d got: %d",
+			dirA, dirB, paths.Mismatch, m,
+		)
 	}
 }
 
@@ -80,39 +118,83 @@ func TestPathDelete(t *testing.T) {
 	}
 }
 
-func TestPathComparisonEmptyDirectoriesMatch(t *testing.T) {
-	dirA := helpers.CreateTempDir(t)
-	dirB := helpers.CreateTempDir(t)
-	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != paths.Match {
-		t.Errorf(
-			"Expected directories a: %s, b: %s to: %d got: %d",
-			dirA, dirB, paths.Match, m,
-		)
+func TestPathMoveFile(t *testing.T) {
+	tests := []struct {
+		src         paths.Path
+		dest        paths.Path
+		shouldFail  bool
+		description string
+	}{
+		{
+			"not_found.txt",
+			"~/will_not_exist",
+			true,
+			"Cannot move non existent",
+		},
+		{
+			helpers.CreateTemp(t),
+			helpers.CreateTempInHome(t),
+			false,
+			"Expand dest paths",
+		},
+		{
+			helpers.CreateTempInHome(t),
+			helpers.CreateTemp(t),
+			false,
+			"Expand src paths",
+		},
+		{
+			helpers.CreateTempInHome(t),
+			paths.Path(fmt.Sprintf("%s/dir1/dir2/dir3/aaa.txt", helpers.CreateTempDir(t))),
+			false,
+			"Creates directory structure",
+		},
 	}
-}
 
-func TestPathComparisonAlwaysMatchItself(t *testing.T) {
-	dirA := helpers.CreateTempDir(t)
-	helpers.CreateSampleNestedStructure(t, dirA)
-	if m := helpers.SampleDirectoriesMatch(t, dirA, dirA); m != paths.Match {
-		t.Errorf(
-			"Expected directories %s to match itself got: %d",
-			dirA, m,
-		)
-	}
-}
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			seedData := helpers.GenerateRandomData(t)
 
-func TestPathComparisonSamplesAreAlwaysUnique(t *testing.T) {
-	dirA := helpers.CreateTempDir(t)
-	helpers.CreateSampleNestedStructure(t, dirA)
+			switch exists, err := test.src.Exists(); {
+			case err != nil:
+				t.Fatalf("Error checking existence of %s, err %s", test.src, err)
+			case exists:
+				helpers.WriteRandomData(t, test.src, seedData)
+			}
 
-	dirB := helpers.CreateTempDir(t)
-	helpers.CreateSampleNestedStructure(t, dirB)
+			if err := test.src.MoveFile(test.dest); err != nil {
+				if test.shouldFail {
+					return
+				}
 
-	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != paths.Mismatch {
-		t.Errorf(
-			"Expected directories a: %s, b: %s to: %d got: %d",
-			dirA, dirB, paths.Mismatch, m,
-		)
+				t.Fatalf(
+					"Unexpected error moving src: %s to dest: %s, err: %s",
+					test.src, test.dest, err,
+				)
+			}
+
+			switch exists, err := test.src.Exists(); {
+			case err != nil:
+				t.Fatalf("Error checking existence of %s, err %s", test.src, err)
+			case exists:
+				t.Fatalf("Source should not exist after move")
+			}
+
+			switch exists, err := test.dest.Exists(); {
+			case err != nil:
+				t.Fatalf("Error checking existence of %s, err %s", test.dest, err)
+			case !exists:
+				t.Fatalf("Dest should exist after move")
+			}
+
+			control := helpers.CreateTemp(t)
+			helpers.WriteRandomData(t, control, seedData)
+			switch m, err := control.Matches(test.dest); {
+			case err != nil:
+				t.Fatalf("Unexpected error comparing files a: %s, b:%s, err: %s", control, test.src, err)
+			case m != paths.Match:
+				t.Fatalf("Dest path doesn't match control")
+			}
+		})
 	}
 }
