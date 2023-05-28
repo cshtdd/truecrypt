@@ -50,7 +50,7 @@ func Run(in internal.Input) error {
 		return err
 	}
 	if !exists {
-		return errors.New("encryped file does not exist")
+		return errors.New("encrypted file does not exist")
 	}
 
 	// reading decrypted folder
