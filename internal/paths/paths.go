@@ -9,7 +9,7 @@ import (
 
 type Path string
 
-func (p Path) expand() string {
+func (p Path) FullPath() string {
 	if after, found := strings.CutPrefix(string(p), "~"); found {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -21,26 +21,26 @@ func (p Path) expand() string {
 }
 
 func (p Path) Read() ([]byte, error) {
-	return os.ReadFile(p.expand())
+	return os.ReadFile(p.FullPath())
 }
 
 const userRwOthersNone = 0700 // tmp files use this forcibly
 
 func (p Path) Write(data []byte) error {
-	fullPath := p.expand()
+	fullPath := p.FullPath()
 	os.MkdirAll(filepath.Dir(fullPath), userRwOthersNone)
 	const userRwOthersR = 0644
 	return os.WriteFile(fullPath, data, userRwOthersR)
 }
 
 func (p Path) MoveFile(dest Path) error {
-	fullDestPath := dest.expand()
+	fullDestPath := dest.FullPath()
 	os.MkdirAll(filepath.Dir(fullDestPath), userRwOthersNone)
-	return os.Rename(p.expand(), fullDestPath)
+	return os.Rename(p.FullPath(), fullDestPath)
 }
 
 func (p Path) Exists() (bool, error) {
-	if _, err := os.Stat(p.expand()); err == nil {
+	if _, err := os.Stat(p.FullPath()); err == nil {
 		return true, nil
 	} else if os.IsNotExist(err) {
 		return false, nil
@@ -50,11 +50,11 @@ func (p Path) Exists() (bool, error) {
 }
 
 func (p Path) Delete() error {
-	return os.RemoveAll(p.expand())
+	return os.RemoveAll(p.FullPath())
 }
 
 func (p Path) Base() string {
-	return filepath.Base(p.expand())
+	return filepath.Base(p.FullPath())
 }
 
 func (p Path) String() string {
@@ -109,4 +109,13 @@ func (p Path) Matches(fileB Path) (MatchType, error) {
 	}
 
 	return Match, nil
+}
+
+func CreateTempFile() (Path, error) {
+	//TODO: remove duplication with the test helpers temp methods
+	if tmp, err := os.CreateTemp("", "tc_temp"); err != nil {
+		return "", err
+	} else {
+		return Path(tmp.Name()), nil
+	}
 }
