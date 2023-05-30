@@ -39,7 +39,7 @@ func TestPathComparisonEmptyDirectoriesMatch(t *testing.T) {
 	dirB := helpers.CreateTempDir(t)
 	if m := helpers.SampleDirectoriesMatch(t, dirA, dirB); m != paths.Match {
 		t.Errorf(
-			"Expected directories a: %s, b: %s to: %d got: %d",
+			"Expected directories a: %s, b: %s to: %s got: %s",
 			dirA, dirB, paths.Match, m,
 		)
 	}
@@ -50,7 +50,7 @@ func TestPathComparisonAlwaysMatchItself(t *testing.T) {
 	helpers.CreateSampleNestedStructure(t, dirA)
 	if m := helpers.SampleDirectoriesMatch(t, dirA, dirA); m != paths.Match {
 		t.Errorf(
-			"Expected directories %s to match itself got: %d",
+			"Expected directories %s to match itself got: %s",
 			dirA, m,
 		)
 	}
