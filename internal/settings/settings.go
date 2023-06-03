@@ -11,9 +11,9 @@ import (
 
 // Reads the default settings path.
 // Supports environment variable overrides.
-func DefaultSettingsPath() string {
+func DefaultSettingsPath() paths.FilePath {
 	if override, found := os.LookupEnv(envSettings); found {
-		return override
+		return paths.FilePath(override)
 	}
 
 	return "~/.config/truecrypt/settings.json"
@@ -21,22 +21,22 @@ func DefaultSettingsPath() string {
 
 // Reads the default decrypted folder.
 // Supports environment variable overrides.
-func DefaultDecryptedFolder() string {
+func DefaultDecryptedFolder() paths.DirPath {
 	if override, found := os.LookupEnv(envDecrypted); found {
-		return override
+		return paths.DirPath(override)
 	}
 
 	return "~/decrypted_folder/t"
 }
 
 type Settings struct {
-	DecryptedFolder paths.Path
-	EncryptedFile   paths.Path
+	DecryptedFolder paths.DirPath
+	EncryptedFile   paths.FilePath // TODO: change this to ZipPath
 }
 
-func LoadFrom(path paths.Path) (Settings, error) {
+func LoadFrom(p paths.FilePath) (Settings, error) {
 	result := Settings{}
-	bytes, err := path.Read()
+	bytes, err := p.Read()
 	if err != nil {
 		return result, err
 	}
@@ -45,13 +45,13 @@ func LoadFrom(path paths.Path) (Settings, error) {
 	return result, nil
 }
 
-func (s Settings) Save(path paths.Path) error {
+func (s Settings) Save(p paths.FilePath) error {
 	bytes, err := json.Marshal(s)
 	if err != nil {
 		return err
 	}
 
-	if err := path.Write(bytes); err != nil {
+	if err := p.Write(bytes); err != nil {
 		return err
 	}
 

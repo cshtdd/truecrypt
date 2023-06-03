@@ -33,7 +33,7 @@ func init() {
 	flag.BoolVar(&flagCleanSettings, "cleanSettings", false, "Deletes the settings")
 
 	// Other config
-	flag.StringVar(&flagSettingsPath, "settings", settings.DefaultSettingsPath(), "[Optional] Settings file path")
+	flag.StringVar(&flagSettingsPath, "settings", settings.DefaultSettingsPath().String(), "[Optional] Settings file path")
 	flag.BoolVar(&flagPause, "pause", false, "[Optional] Pause at the end")
 
 	flag.Parse()
@@ -41,7 +41,7 @@ func init() {
 	// Create Program Input
 	input = &internal.Input{
 		IO:           internal.IO{Reader: os.Stdin, Writer: os.Stdout},
-		SettingsPath: paths.Path(flagSettingsPath),
+		SettingsPath: paths.FilePath(flagSettingsPath),
 	}
 }
 

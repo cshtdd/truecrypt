@@ -10,33 +10,33 @@ import (
 	"tddapps.com/truecrypt/internal/paths"
 )
 
-func CreateTemp(t *testing.T) paths.Path {
+func CreateTemp(t *testing.T) paths.FilePath {
 	return createTempInDir(t, "")
 }
 
-func CreateTempInHome(t *testing.T) paths.Path {
+func CreateTempInHome(t *testing.T) paths.FilePath {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		t.Fatal("Cannot read $HOME")
 	}
 	fullPath := createTempInDir(t, home)
-	return paths.Path(filepath.Join("~", filepath.Base(fullPath.String())))
+	return paths.FilePath(filepath.Join("~", fullPath.Base()))
 }
 
-func CreateTempDir(t *testing.T) paths.Path {
+func CreateTempDir(t *testing.T) paths.DirPath {
 	return createTempDirInDir(t, "")
 }
 
-func CreateTempDirInHome(t *testing.T) paths.Path {
+func CreateTempDirInHome(t *testing.T) paths.DirPath {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		t.Fatal("Cannot read $HOME")
 	}
 	fullPath := createTempDirInDir(t, home)
-	return paths.Path(filepath.Join("~", filepath.Base(fullPath.String())))
+	return paths.DirPath(filepath.Join("~", fullPath.Base()))
 }
 
-func createTempInDir(t *testing.T, dir string) paths.Path {
+func createTempInDir(t *testing.T, dir string) paths.FilePath {
 	tmp, err := os.CreateTemp(dir, "tc_settings")
 	if err != nil {
 		t.Fatal("Cannot create tmp file", err)
@@ -45,10 +45,10 @@ func createTempInDir(t *testing.T, dir string) paths.Path {
 	t.Cleanup(func() {
 		os.Remove(tmp.Name())
 	})
-	return paths.Path(tmp.Name())
+	return paths.FilePath(tmp.Name())
 }
 
-func createTempDirInDir(t *testing.T, dir string) paths.Path {
+func createTempDirInDir(t *testing.T, dir string) paths.DirPath {
 	result, err := os.MkdirTemp(dir, "tc_test")
 	if err != nil {
 		t.Fatal("Cannot create temp dir")
@@ -57,7 +57,7 @@ func createTempDirInDir(t *testing.T, dir string) paths.Path {
 	t.Cleanup(func() {
 		os.RemoveAll(result)
 	})
-	return paths.Path(result)
+	return paths.DirPath(result)
 }
 
 func EnsureExists(t *testing.T, p paths.Path, expected bool) {
@@ -70,16 +70,16 @@ func EnsureExists(t *testing.T, p paths.Path, expected bool) {
 	}
 }
 
-func getSamplePaths(t *testing.T, dir paths.Path) []paths.Path {
-	var result []paths.Path
+func getSamplePaths(t *testing.T, dir paths.DirPath) []paths.FilePath {
+	var result []paths.FilePath
 	count := int(GenerateRandomData(t)[0]%5) + 1
 	for i := 0; i < count; i++ {
-		result = append(result, paths.Path(filepath.Join(
+		result = append(result, paths.FilePath(filepath.Join(
 			dir.String(),
 			"subdir1/subdir2",
 			fmt.Sprintf("aaa%d.txt", i),
 		)))
-		result = append(result, paths.Path(filepath.Join(
+		result = append(result, paths.FilePath(filepath.Join(
 			dir.String(),
 			"subdir3",
 			fmt.Sprintf("ccc%d.txt", i),
@@ -88,7 +88,7 @@ func getSamplePaths(t *testing.T, dir paths.Path) []paths.Path {
 	return result
 }
 
-func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
+func CreateSampleNestedStructure(t *testing.T, dir paths.DirPath) {
 	for _, p := range getSamplePaths(t, dir) {
 		EnsureExists(t, p, false)
 		data := GenerateRandomData(t)
@@ -97,7 +97,7 @@ func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
 	}
 }
 
-func WriteRandomData(t *testing.T, p paths.Path, data []byte) {
+func WriteRandomData(t *testing.T, p paths.FilePath, data []byte) {
 	if err := p.Write(data); err != nil {
 		t.Errorf("Write failed path: %s, err: %s", p.String(), err)
 	}

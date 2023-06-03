@@ -15,8 +15,8 @@ import (
 
 func TestRunsOutputValidation(t *testing.T) {
 	tests := []struct {
-		settingsPath  paths.Path
-		encryptedPath paths.Path
+		settingsPath  paths.FilePath
+		encryptedPath paths.FilePath
 		description   string
 	}{
 		{
@@ -49,7 +49,7 @@ func TestRunsOutputValidation(t *testing.T) {
 
 			// validate program prompts
 			expectedSettings := settings.Settings{
-				DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
+				DecryptedFolder: settings.DefaultDecryptedFolder(),
 				EncryptedFile:   test.encryptedPath,
 			}
 			expectedLines := []string{
@@ -57,7 +57,7 @@ func TestRunsOutputValidation(t *testing.T) {
 				"Enter decrypted folder:\n",
 				fmt.Sprintf("\tassumes \"%s\" if blank\n", settings.DefaultDecryptedFolder()),
 				fmt.Sprintf("Saving settings: %+v\n", expectedSettings),
-				fmt.Sprintf("Settings Path: %s\n", test.settingsPath.String()),
+				fmt.Sprintf("Settings path: %s\n", test.settingsPath.String()),
 			}
 			for _, line := range expectedLines {
 				if !strings.Contains(fakeOut.String(), line) {
@@ -70,8 +70,8 @@ func TestRunsOutputValidation(t *testing.T) {
 
 func TestRunsSavesEncryptedPath(t *testing.T) {
 	tests := []struct {
-		settingsPath  paths.Path
-		encryptedPath paths.Path
+		settingsPath  paths.FilePath
+		encryptedPath paths.FilePath
 		description   string
 	}{
 		{
@@ -120,15 +120,15 @@ func TestRunsSavesEncryptedPath(t *testing.T) {
 
 func TestRunsSavesDecryptedFolder(t *testing.T) {
 	tests := []struct {
-		settingsPath            paths.Path
-		inputDecryptedFolder    string
-		expectedDecryptedFolder paths.Path
+		settingsPath            paths.FilePath
+		inputDecryptedFolder    paths.DirPath
+		expectedDecryptedFolder paths.DirPath
 		description             string
 	}{
 		{
 			helpers.CreateTemp(t),
 			"",
-			paths.Path(settings.DefaultDecryptedFolder()),
+			settings.DefaultDecryptedFolder(),
 			"Assumes default",
 		},
 		{
@@ -145,7 +145,7 @@ func TestRunsSavesDecryptedFolder(t *testing.T) {
 			input := internal.Input{
 				IO: internal.IO{
 					Reader: strings.NewReader(
-						strings.Join([]string{helpers.CreateTemp(t).String(), test.inputDecryptedFolder}, "\n"),
+						strings.Join([]string{helpers.CreateTemp(t).String(), test.inputDecryptedFolder.String()}, "\n"),
 					),
 					Writer: &fakeOut,
 				},
@@ -176,7 +176,7 @@ func TestRunsSavesDecryptedFolder(t *testing.T) {
 
 func TestRunFailsWhenEncryptedFileNotFound(t *testing.T) {
 	tests := []struct {
-		file        string
+		file        paths.FilePath
 		description string
 	}{
 		{"not_found.zip", "File does not exist"},
@@ -188,7 +188,7 @@ func TestRunFailsWhenEncryptedFileNotFound(t *testing.T) {
 			var fakeOut bytes.Buffer
 			input := internal.Input{
 				IO: internal.IO{
-					Reader: strings.NewReader(test.file),
+					Reader: strings.NewReader(test.file.String()),
 					Writer: &fakeOut,
 				},
 				SettingsPath: "does_not_matter.json",
@@ -204,15 +204,15 @@ func TestRunFailsWhenEncryptedFileNotFound(t *testing.T) {
 func TestLoadsExistingSettings(t *testing.T) {
 	base := settings.Settings{
 		EncryptedFile:   helpers.CreateTemp(t),
-		DecryptedFolder: paths.Path("~/tmp/decrypted"),
+		DecryptedFolder: paths.DirPath("~/tmp/decrypted"),
 	}
 	diffEncryptedFile := settings.Settings{
 		EncryptedFile:   helpers.CreateTemp(t),
-		DecryptedFolder: paths.Path("~/tmp/decrypted"),
+		DecryptedFolder: paths.DirPath("~/tmp/decrypted"),
 	}
 	diffDecryptedFolder := settings.Settings{
 		EncryptedFile:   base.EncryptedFile,
-		DecryptedFolder: paths.Path("~/tmp/changed"),
+		DecryptedFolder: paths.DirPath("~/tmp/changed"),
 	}
 
 	tests := []struct {

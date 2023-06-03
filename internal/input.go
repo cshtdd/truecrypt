@@ -6,5 +6,5 @@ import (
 
 type Input struct {
 	IO
-	SettingsPath paths.Path
+	SettingsPath paths.FilePath
 }

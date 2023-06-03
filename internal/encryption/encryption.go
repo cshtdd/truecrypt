@@ -97,7 +97,7 @@ func Decrypt(in internal.Input) error {
 	return extract(s.EncryptedFile, s.DecryptedFolder, password)
 }
 
-func compress(sourceDir paths.Path, dest paths.Path, password string) error {
+func compress(sourceDir paths.DirPath, dest paths.FilePath, password string) error {
 	// TODO: maybe figure out a way to inject this method
 	if _, err := exec.Command("zip", "-v").Output(); err != nil { // TODO display this output
 		return err
@@ -108,30 +108,22 @@ func compress(sourceDir paths.Path, dest paths.Path, password string) error {
 		return err
 	}
 
-	// TODO: change dir
-
-	//cmd := exec.Command("zip", "-er", "-P", password, tmp.FullPath(), sourceDir.FullPath())
 	cmd := exec.Command("zip", "-er", "-P", password, tmp.FullPath(), sourceDir.Base())
 	cmd.Dir = sourceDir.DirName()
-	//cmd := exec.Cmd{
-	//	Path: "zip",
-	//	Args: []string{"-er", "-P", password, tmp.FullPath(), sourceDir.Base()},
-	//	Dir:  sourceDir.DirName(),
-	//}
 	if _, err := cmd.Output(); err != nil { // TODO display this output
 		return err
 	}
 
-	return tmp.MoveFile(dest)
+	return tmp.Move(dest)
 }
 
-func extract(source paths.Path, dest paths.Path, password string) error {
+func extract(source paths.FilePath, dest paths.DirPath, password string) error {
 	// TODO: maybe figure out a way to inject this method
 	if _, err := exec.Command("unzip", "-v").Output(); err != nil { // TODO display this output
 		return err
 	}
 
-	if err := dest.CreateDir(); err != nil {
+	if err := dest.Create(); err != nil {
 		return err
 	}
 

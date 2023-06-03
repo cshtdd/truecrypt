@@ -27,7 +27,7 @@ func loadSettings(in internal.Input, defaultSettings settings.Settings) (existin
 func Run(in internal.Input) error {
 	// loading settings
 	defaultSettings := settings.Settings{
-		DecryptedFolder: paths.Path(settings.DefaultDecryptedFolder()),
+		DecryptedFolder: settings.DefaultDecryptedFolder(),
 	}
 	existingSettings, s := loadSettings(in, defaultSettings)
 	if existingSettings {
@@ -43,7 +43,7 @@ func Run(in internal.Input) error {
 	case err != nil:
 		return err
 	case read:
-		s.EncryptedFile = paths.Path(line)
+		s.EncryptedFile = paths.FilePath(line)
 	}
 	exists, err := s.EncryptedFile.Exists()
 	if err != nil {
@@ -64,7 +64,7 @@ func Run(in internal.Input) error {
 	case err != nil:
 		return err
 	case read:
-		s.DecryptedFolder = paths.Path(line)
+		s.DecryptedFolder = paths.DirPath(line)
 	}
 	if len(s.DecryptedFolder) == 0 {
 		return errors.New("decrypted folder cannot be blank")
@@ -72,7 +72,7 @@ func Run(in internal.Input) error {
 
 	// savings settings
 	in.WriteLine(fmt.Sprintf("Saving settings: %+v", s))
-	in.WriteLine(fmt.Sprintf("Settings Path: %s", in.SettingsPath.String()))
+	in.WriteLine(fmt.Sprintf("Settings path: %s", in.SettingsPath.String()))
 	if err := s.Save(in.SettingsPath); err != nil {
 		return err
 	}

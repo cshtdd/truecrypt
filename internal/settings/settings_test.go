@@ -10,15 +10,15 @@ import (
 )
 
 func TestDefaultSettingsPath(t *testing.T) {
-	expected := "~/.config/truecrypt/settings.json"
+	expected := paths.FilePath("~/.config/truecrypt/settings.json")
 	if p := settings.DefaultSettingsPath(); p != expected {
 		t.Errorf("DefaultSettingsPath() = %s, want %s", p, expected)
 	}
 }
 
 func TestDefaultSettingsPathEnvOverride(t *testing.T) {
-	expected := "aaa/bbb.json"
-	os.Setenv("TC_SETTINGS", expected)
+	expected := paths.FilePath("aaa/bbb.json")
+	os.Setenv("TC_SETTINGS", expected.String())
 	defer os.Unsetenv("TC_SETTINGS")
 
 	if p := settings.DefaultSettingsPath(); p != expected {
@@ -27,15 +27,15 @@ func TestDefaultSettingsPathEnvOverride(t *testing.T) {
 }
 
 func TestDefaultDecryptedFolder(t *testing.T) {
-	expected := "~/decrypted_folder/t"
+	expected := paths.DirPath("~/decrypted_folder/t")
 	if p := settings.DefaultDecryptedFolder(); p != expected {
 		t.Errorf("DefaultDecryptedFolder() = %s, want %s", p, expected)
 	}
 }
 
 func TestDefaultDecryptedFolderEnvOverride(t *testing.T) {
-	expected := "aaa/bbb.json"
-	os.Setenv("TC_DECRYPTED", expected)
+	expected := paths.DirPath("aaa/bbb")
+	os.Setenv("TC_DECRYPTED", expected.String())
 	defer os.Unsetenv("TC_DECRYPTED")
 
 	if p := settings.DefaultDecryptedFolder(); p != expected {
@@ -63,7 +63,7 @@ func TestSettingsIsValidEncryptedFile(t *testing.T) {
 	tmp := helpers.CreateTemp(t)
 
 	tests := []struct {
-		file        paths.Path
+		file        paths.FilePath
 		want        bool
 		description string
 	}{

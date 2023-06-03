@@ -28,10 +28,10 @@ func TestEndToEnd(t *testing.T) {
 
 	// clone the source because it will get wiped
 	clone := helpers.CreateTempDir(t)
-	if err := s.DecryptedFolder.CopyDir(clone); err != nil {
+	if err := s.DecryptedFolder.Copy(clone); err != nil {
 		t.Fatalf("Unexpected error cloning source, err: %s", err)
 	}
-	if m := s.DecryptedFolder.MatchesDir(clone); m != paths.Match {
+	if m := s.DecryptedFolder.Matches(clone); m != paths.Match {
 		t.Fatalf("Expected clone to match, got: %s", m)
 	}
 
@@ -73,7 +73,7 @@ func TestEndToEnd(t *testing.T) {
 	}
 
 	// compare the two decrypted folders
-	if m := clone.MatchesDir(s.DecryptedFolder); m != paths.Match {
+	if m := clone.Matches(s.DecryptedFolder); m != paths.Match {
 		t.Errorf(
 			"Expected directories a: %s, b: %s to: %s got: %s",
 			clone, s.DecryptedFolder, paths.Match, m,
