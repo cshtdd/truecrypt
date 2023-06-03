@@ -79,6 +79,10 @@ func (p Path) Base() string {
 	return filepath.Base(p.FullPath())
 }
 
+func (p Path) DirName() string {
+	return filepath.Dir(p.FullPath())
+}
+
 func (p Path) String() string {
 	return string(p)
 }

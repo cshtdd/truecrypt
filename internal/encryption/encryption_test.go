@@ -13,18 +13,26 @@ import (
 )
 
 func TestEndToEnd(t *testing.T) {
-	// create a test directory with many files
-	decryptedSource := helpers.CreateTempDir(t)
-	helpers.CreateSampleNestedStructure(t, decryptedSource)
-
-	// create settings that point to that
-	settingsEncrypt := helpers.CreateTemp(t)
-	configEncrypt := settings.Settings{
-		DecryptedFolder: decryptedSource,
+	// create settings that point to a decrypted folder
+	sp := helpers.CreateTemp(t)
+	s := settings.Settings{
+		DecryptedFolder: helpers.CreateTempDir(t),
 		EncryptedFile:   helpers.CreateTemp(t),
 	}
-	if err := configEncrypt.Save(settingsEncrypt); err != nil {
+	// create a test directory with many files
+	helpers.CreateSampleNestedStructure(t, s.DecryptedFolder)
+	// save the settings
+	if err := s.Save(sp); err != nil {
 		t.Fatalf("Error saving encrypt settings, err: %s", err)
+	}
+
+	// clone the source because it will get wiped
+	clone := helpers.CreateTempDir(t)
+	if err := s.DecryptedFolder.CopyDir(clone); err != nil {
+		t.Fatalf("Unexpected error cloning source, err: %s", err)
+	}
+	if m := s.DecryptedFolder.MatchesDir(clone); m != paths.Match {
+		t.Fatalf("Expected clone to match, got: %s", m)
 	}
 
 	password := "thisissecret"
@@ -38,20 +46,15 @@ func TestEndToEnd(t *testing.T) {
 			),
 			Writer: &fakeOutEncrypt,
 		},
-		SettingsPath: settingsEncrypt,
+		SettingsPath: sp,
 	}
 	if err := encryption.Encrypt(inputEncrypt); err != nil {
 		t.Fatalf("Error encrypting data, err: %s", err)
 	}
 
-	// create a settings to decrypt to a different place
-	settingsDecrypt := helpers.CreateTemp(t)
-	configDecrypt := settings.Settings{
-		DecryptedFolder: helpers.CreateTempDir(t),
-		EncryptedFile:   configEncrypt.EncryptedFile,
-	}
-	if err := configDecrypt.Save(settingsDecrypt); err != nil {
-		t.Fatalf("Error saving decrypt settings, err: %s", err)
+	// source must get wiped
+	if exists, err := s.DecryptedFolder.Exists(); exists || err != nil {
+		t.Fatalf("Decrypted source should not exist")
 	}
 
 	// decrypt the data
@@ -63,17 +66,17 @@ func TestEndToEnd(t *testing.T) {
 			),
 			Writer: &fakeOutDecrypt,
 		},
-		SettingsPath: settingsDecrypt,
+		SettingsPath: sp,
 	}
 	if err := encryption.Decrypt(inputDecrypt); err != nil {
 		t.Fatalf("Error decrypting data, err: %s", err)
 	}
 
 	// compare the two decrypted folders
-	if m := helpers.SampleDirectoriesMatch(t, decryptedSource, configDecrypt.DecryptedFolder); m != paths.Match {
+	if m := clone.MatchesDir(s.DecryptedFolder); m != paths.Match {
 		t.Errorf(
 			"Expected directories a: %s, b: %s to: %s got: %s",
-			decryptedSource, configDecrypt.DecryptedFolder, paths.Match, m,
+			clone, s.DecryptedFolder, paths.Match, m,
 		)
 	}
 }

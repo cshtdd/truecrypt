@@ -9,33 +9,44 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-func Encrypt(in internal.Input) error {
+func loadSettings(in internal.Input) (settings.Settings, error) {
 	in.WriteLine(fmt.Sprintf("Loading settings from: %s", in.SettingsPath))
 	s, err := settings.LoadFrom(in.SettingsPath)
-	if err != nil {
-		return err
+	if err == nil {
+		in.WriteLine(fmt.Sprintf("Loaded settings: %+v", s))
 	}
-	in.WriteLine(fmt.Sprintf("Loaded settings: %+v", s))
+	return s, err
+}
 
-	// validate decrypted folder is valid
-	exists, err := s.DecryptedFolder.Exists() // TODO: test the negative paths
+func readPassword(in *internal.Input) (string, error) {
+	in.WriteLine("Enter encryption password:")
+	// TODO: make sure ReadLine is not such a diva that needs a pointer, or pass an in pointer everywhere
+	switch read, line, err := in.ReadLine(); {
+	case err != nil:
+		return "", err
+	case read && len(line) > 5:
+		return line, nil
+	default:
+		return "", errors.New("empty or short passwords are not allowed")
+	}
+}
+
+func Encrypt(in internal.Input) error {
+	s, err := loadSettings(in)
 	if err != nil {
 		return err
 	}
-	if !exists {
+
+	switch exists, err := s.DecryptedFolder.Exists(); { // TODO: test the negative paths
+	case err != nil:
+		return err
+	case !exists:
 		return errors.New("decrypted folder does not exist")
 	}
 
-	// ask for password
-	var password string
-	in.WriteLine("Enter encryption password:")
-	switch read, line, err := in.ReadLine(); {
-	case err != nil:
+	password, err := readPassword(&in)
+	if err != nil {
 		return err
-	case read && len(line) > 5:
-		password = line
-	default:
-		return errors.New("empty or short passwords are not allowed")
 	}
 
 	// ask for password confirmation
@@ -49,26 +60,82 @@ func Encrypt(in internal.Input) error {
 	// TODO: test password mismatch
 
 	// TODO: test zip failure
-	return compress(s.DecryptedFolder, s.EncryptedFile, password)
+	if err := compress(s.DecryptedFolder, s.EncryptedFile, password); err != nil {
+		return err
+	}
+
+	// wipe the original directory on success
+	return s.DecryptedFolder.Delete()
 }
 
 func Decrypt(in internal.Input) error {
-	// TODO implement this
-	return nil
+	s, err := loadSettings(in)
+	if err != nil {
+		return err
+	}
+
+	switch exists, err := s.EncryptedFile.Exists(); { // TODO: test the negative paths
+	case err != nil:
+		return err
+	case !exists:
+		return errors.New("encrypted file does not exist")
+	}
+
+	switch exists, err := s.DecryptedFolder.Exists(); { // TODO: test the negative paths
+	case err != nil:
+		return err
+	case exists:
+		return errors.New("decrypted folder exists")
+	}
+
+	password, err := readPassword(&in)
+	if err != nil {
+		return err
+	}
+
+	// TODO: test unzip failure
+	return extract(s.EncryptedFile, s.DecryptedFolder, password)
 }
 
 func compress(sourceDir paths.Path, dest paths.Path, password string) error {
-	// TODO: maybe figure out a way to inject this
-	// TODO: ensure zip can run
+	// TODO: maybe figure out a way to inject this method
+	if _, err := exec.Command("zip", "-v").Output(); err != nil { // TODO display this output
+		return err
+	}
+
 	tmp, err := paths.CreateTempFile()
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command("zip", "-e", "-r", "-P", password, tmp.FullPath(), sourceDir.FullPath())
-	if _, err := cmd.Output(); err != nil {
+	// TODO: change dir
+
+	//cmd := exec.Command("zip", "-er", "-P", password, tmp.FullPath(), sourceDir.FullPath())
+	cmd := exec.Command("zip", "-er", "-P", password, tmp.FullPath(), sourceDir.Base())
+	cmd.Dir = sourceDir.DirName()
+	//cmd := exec.Cmd{
+	//	Path: "zip",
+	//	Args: []string{"-er", "-P", password, tmp.FullPath(), sourceDir.Base()},
+	//	Dir:  sourceDir.DirName(),
+	//}
+	if _, err := cmd.Output(); err != nil { // TODO display this output
 		return err
 	}
 
 	return tmp.MoveFile(dest)
+}
+
+func extract(source paths.Path, dest paths.Path, password string) error {
+	// TODO: maybe figure out a way to inject this method
+	if _, err := exec.Command("unzip", "-v").Output(); err != nil { // TODO display this output
+		return err
+	}
+
+	if err := dest.CreateDir(); err != nil {
+		return err
+	}
+
+	cmd := exec.Command("unzip", "-n", source.FullPath(), "-d", dest.FullPath(), "-P", password)
+	_, err := cmd.Output()
+	return err
 }
