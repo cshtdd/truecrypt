@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"crypto/rand"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -69,16 +70,26 @@ func EnsureExists(t *testing.T, p paths.Path, expected bool) {
 	}
 }
 
-func getSamplePaths(dir paths.Path) []paths.Path {
-	return []paths.Path{
-		paths.Path(filepath.Join(dir.String(), "subdir1/subdir2", "aaa.txt")),
-		paths.Path(filepath.Join(dir.String(), "subdir1/subdir2", "bbb.txt")),
-		paths.Path(filepath.Join(dir.String(), "subdir3", "ccc.txt")),
+func getSamplePaths(t *testing.T, dir paths.Path) []paths.Path {
+	var result []paths.Path
+	count := int(GenerateRandomData(t)[0]%5) + 1
+	for i := 0; i < count; i++ {
+		result = append(result, paths.Path(filepath.Join(
+			dir.String(),
+			"subdir1/subdir2",
+			fmt.Sprintf("aaa%d.txt", i),
+		)))
+		result = append(result, paths.Path(filepath.Join(
+			dir.String(),
+			"subdir3",
+			fmt.Sprintf("ccc%d.txt", i),
+		)))
 	}
+	return result
 }
 
 func CreateSampleNestedStructure(t *testing.T, dir paths.Path) {
-	for _, p := range getSamplePaths(dir) {
+	for _, p := range getSamplePaths(t, dir) {
 		EnsureExists(t, p, false)
 		data := GenerateRandomData(t)
 		WriteRandomData(t, p, data)
@@ -98,20 +109,4 @@ func GenerateRandomData(t *testing.T) []byte {
 		t.Errorf("Random data generation failed err: %s", err)
 	}
 	return data
-}
-
-func SampleDirectoriesMatch(t *testing.T, dirA paths.Path, dirB paths.Path) paths.MatchType {
-	filesB := getSamplePaths(dirB)
-
-	for index, fileA := range getSamplePaths(dirA) {
-		fileB := filesB[index]
-		switch m, err := fileA.Matches(fileB); {
-		case err != nil:
-			t.Fatalf("Unexpected error comparing files a: %s, b:%s, err: %s", fileA, fileB, err)
-		case m != paths.Match:
-			return m
-		}
-	}
-
-	return paths.Match
 }

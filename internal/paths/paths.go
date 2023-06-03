@@ -2,7 +2,9 @@ package paths
 
 import (
 	"bytes"
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -24,19 +26,39 @@ func (p Path) Read() ([]byte, error) {
 	return os.ReadFile(p.FullPath())
 }
 
-const userRwOthersNone = 0700 // tmp files use this forcibly
+func (p Path) CreateDir() error {
+	fullPath := p.FullPath()
+	const userRwOthersNone = 0700 // tmp files use this forcibly
+	return os.MkdirAll(filepath.Dir(fullPath), userRwOthersNone)
+}
 
 func (p Path) Write(data []byte) error {
-	fullPath := p.FullPath()
-	os.MkdirAll(filepath.Dir(fullPath), userRwOthersNone)
+	if err := p.CreateDir(); err != nil {
+		return err
+	}
 	const userRwOthersR = 0644
-	return os.WriteFile(fullPath, data, userRwOthersR)
+	return os.WriteFile(p.FullPath(), data, userRwOthersR)
 }
 
 func (p Path) MoveFile(dest Path) error {
-	fullDestPath := dest.FullPath()
-	os.MkdirAll(filepath.Dir(fullDestPath), userRwOthersNone)
-	return os.Rename(p.FullPath(), fullDestPath)
+	if err := dest.CreateDir(); err != nil {
+		return err
+	}
+	return os.Rename(p.FullPath(), dest.FullPath())
+}
+
+func (p Path) CopyDir(dest Path) error {
+	// wipe the dest beforehand
+	if err := dest.Delete(); err != nil {
+		return err
+	}
+
+	// copy the files
+	cmd := exec.Command("cp", "-r",
+		fmt.Sprintf("%s/", p.FullPath()), dest.FullPath(),
+	)
+	_, err := cmd.Output()
+	return err
 }
 
 func (p Path) Exists() (bool, error) {
@@ -77,7 +99,15 @@ func (m MatchType) String() string {
 	}
 }
 
-func (p Path) Matches(fileB Path) (MatchType, error) {
+func (p Path) MatchesDir(dirB Path) MatchType {
+	cmd := exec.Command("diff", "-q", "-r", p.FullPath(), dirB.FullPath())
+	if _, err := cmd.Output(); err != nil {
+		return Mismatch
+	}
+	return Match
+}
+
+func (p Path) MatchesFile(fileB Path) (MatchType, error) {
 	existsA, err := p.Exists()
 	if err != nil {
 		return Mismatch, err

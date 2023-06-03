@@ -3,6 +3,7 @@ package paths_test
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/test/helpers"
 	"testing"
@@ -30,6 +31,49 @@ func TestFullPath(t *testing.T) {
 			actual := paths.Path(test.path).FullPath()
 			if actual != test.expected {
 				t.Errorf("paths.Expand(%s) = %s, want %s", test.path, actual, test.expected)
+			}
+		})
+	}
+}
+
+func TestCreateDir(t *testing.T) {
+	t1 := helpers.CreateTempDir(t)
+	t2 := helpers.CreateTempDirInHome(t)
+
+	tests := []struct {
+		p           paths.Path
+		target      paths.Path
+		description string
+	}{
+		{
+			paths.Path(fmt.Sprintf("%s/aaa.txt", t1)),
+			t1,
+			"Does not create existing dir",
+		},
+		{
+			paths.Path(fmt.Sprintf("%s/bbb/ccc/aaa.txt", t1)),
+			paths.Path(fmt.Sprintf("%s/bbb/ccc/", t1)),
+			"Creates dir structure"},
+		{
+			paths.Path(fmt.Sprintf("%s/bbb/ccc/ddd/eee/", t1)),
+			paths.Path(fmt.Sprintf("%s/bbb/ccc/ddd/eee/", t1)),
+			"Creates dir path"},
+		{
+			paths.Path(fmt.Sprintf("%s/aaa.txt", t2)),
+			t2, "Does not create existing home dir"},
+		{
+			paths.Path(fmt.Sprintf("%s/bbb/ccc/aaa.txt", t1)),
+			paths.Path(fmt.Sprintf("%s/bbb/ccc/", t1)),
+			"Creates home dir structure"},
+	}
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			if err := test.p.CreateDir(); err != nil {
+				t.Fatalf("Unexpected error creating p: %s err: %s", test.p, err)
+			}
+
+			if exists, err := test.target.Exists(); !exists || err != nil {
+				t.Fatalf("Target path does not exist p: %s exists: %t err: %s", test.target, exists, err)
 			}
 		})
 	}
@@ -76,6 +120,43 @@ func TestDelete(t *testing.T) {
 
 			helpers.EnsureExists(t, test.path, false)
 		})
+	}
+}
+
+func TestMatchesDirEmptyDirectoriesMatch(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	dirB := helpers.CreateTempDir(t)
+	if m := dirA.MatchesDir(dirB); m != paths.Match {
+		t.Errorf(
+			"Expected directories a: %s, b: %s to: %s got: %s",
+			dirA, dirB, paths.Match, m,
+		)
+	}
+}
+
+func TestMatchesDirAlwaysMatchItself(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirA)
+	if m := dirA.MatchesDir(dirA); m != paths.Match {
+		t.Errorf(
+			"Expected directories %s to match itself got: %s",
+			dirA, m,
+		)
+	}
+}
+
+func TestMatchesDirSamplesAreAlwaysUnique(t *testing.T) {
+	dirA := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirA)
+
+	dirB := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, dirB)
+
+	if m := dirA.MatchesDir(dirB); m != paths.Mismatch {
+		t.Errorf(
+			"Expected directories a: %s, b: %s to: %s got: %s",
+			dirA, dirB, paths.Mismatch, m,
+		)
 	}
 }
 
@@ -159,11 +240,92 @@ func TestMoveFile(t *testing.T) {
 
 			control := helpers.CreateTemp(t)
 			helpers.WriteRandomData(t, control, seedData)
-			switch m, err := control.Matches(test.dest); {
+			switch m, err := control.MatchesFile(test.dest); {
 			case err != nil:
 				t.Fatalf("Unexpected error comparing files a: %s, b:%s, err: %s", control, test.src, err)
 			case m != paths.Match:
 				t.Fatalf("Dest path doesn't match control")
+			}
+		})
+	}
+}
+
+func TestCopyDirectory(t *testing.T) {
+	existingDir := helpers.CreateTempDir(t)
+	helpers.CreateSampleNestedStructure(t, existingDir)
+	helpers.CreateSampleNestedStructure(t, paths.Path(filepath.Join(existingDir.FullPath(), "another")))
+
+	tests := []struct {
+		source         paths.Path
+		dest           paths.Path
+		copyShouldFail bool
+		expects        paths.MatchType
+		description    string
+	}{
+		{
+			"not_found",
+			"~/will_not_exist",
+			true,
+			paths.Mismatch,
+			"Cannot copy non existent",
+		},
+		{
+			helpers.CreateTempDir(t),
+			helpers.CreateTempDirInHome(t),
+			false,
+			paths.Match,
+			"Expands dest paths",
+		},
+		{
+			helpers.CreateTempDirInHome(t),
+			helpers.CreateTempDir(t),
+			false,
+			paths.Match,
+			"Expands source paths",
+		},
+		{
+			paths.Path(fmt.Sprintf("%s/", helpers.CreateTempDir(t))),
+			helpers.CreateTempDir(t),
+			false,
+			paths.Match,
+			"Handles trailing slashes in src",
+		},
+		{
+			helpers.CreateTempDir(t),
+			paths.Path(fmt.Sprintf("%s/", helpers.CreateTempDir(t))),
+			false,
+			paths.Match,
+			"Handles trailing slashes in dest",
+		},
+		{
+			paths.Path(fmt.Sprintf("%s/", helpers.CreateTempDir(t))),
+			paths.Path(fmt.Sprintf("%s/", helpers.CreateTempDir(t))),
+			false,
+			paths.Match,
+			"Handles trailing slashes in src and dest",
+		},
+		{
+			helpers.CreateTempDir(t),
+			existingDir,
+			false,
+			paths.Match,
+			"Overwrites dest",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			if exists, _ := test.source.Exists(); exists {
+				helpers.CreateSampleNestedStructure(t, test.source)
+			}
+
+			if err := test.source.CopyDir(test.dest); err != nil && !test.copyShouldFail {
+				t.Fatalf("Error copying a: %s to b: %s, err: %s", test.source, test.dest, err)
+			}
+
+			if m := test.source.MatchesDir(test.dest); m != test.expects {
+				t.Fatalf(
+					"Path mismatch a: %s, b: %s, want: %s, got: %s", test.source, test.dest, test.expects, m,
+				)
 			}
 		})
 	}
