@@ -14,6 +14,11 @@ func CreateTemp(t *testing.T) paths.FilePath {
 	return createTempInDir(t, "")
 }
 
+func CreateTempZip(t *testing.T) paths.ZipPath {
+	f := CreateTemp(t)
+	return renameToZip(t, f)
+}
+
 func CreateTempInHome(t *testing.T) paths.FilePath {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -21,6 +26,11 @@ func CreateTempInHome(t *testing.T) paths.FilePath {
 	}
 	fullPath := createTempInDir(t, home)
 	return paths.FilePath(filepath.Join("~", fullPath.Base()))
+}
+
+func CreateTempZipInHome(t *testing.T) paths.ZipPath {
+	f := CreateTempInHome(t)
+	return renameToZip(t, f)
 }
 
 func CreateTempDir(t *testing.T) paths.DirPath {
@@ -36,16 +46,31 @@ func CreateTempDirInHome(t *testing.T) paths.DirPath {
 	return paths.DirPath(filepath.Join("~", fullPath.Base()))
 }
 
+func renameToZip(t *testing.T, f paths.FilePath) paths.ZipPath {
+	t.Cleanup(func() {
+		f.Delete()
+	})
+	z := paths.ZipPath(fmt.Sprintf("%s.zip", f))
+	if err := f.Move(paths.FilePath(z.FullPath())); err != nil {
+		t.Fatalf("Error renaming temp file")
+	}
+	t.Cleanup(func() {
+		z.Delete()
+	})
+	return z
+}
+
 func createTempInDir(t *testing.T, dir string) paths.FilePath {
 	tmp, err := os.CreateTemp(dir, "tc_settings")
 	if err != nil {
 		t.Fatal("Cannot create tmp file", err)
 		return ""
 	}
+	p := paths.FilePath(tmp.Name())
 	t.Cleanup(func() {
-		os.Remove(tmp.Name())
+		p.Delete()
 	})
-	return paths.FilePath(tmp.Name())
+	return p
 }
 
 func createTempDirInDir(t *testing.T, dir string) paths.DirPath {
@@ -54,10 +79,11 @@ func createTempDirInDir(t *testing.T, dir string) paths.DirPath {
 		t.Fatal("Cannot create temp dir")
 		return ""
 	}
+	p := paths.DirPath(result)
 	t.Cleanup(func() {
-		os.RemoveAll(result)
+		p.Delete()
 	})
-	return paths.DirPath(result)
+	return p
 }
 
 func EnsureExists(t *testing.T, p paths.Path, expected bool) {

@@ -2,6 +2,7 @@ package paths
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -83,12 +84,15 @@ func (p path) String() string {
 
 // FilePath functions
 
-func CreateTempFile() (FilePath, error) {
-	//TODO: remove duplication with the test helpers temp methods
-	if tmp, err := os.CreateTemp("", "tc_temp"); err != nil {
+func CreateTempZipFile() (ZipPath, error) {
+	if tmp, err := os.CreateTemp("", "tc_temp*.zip"); err != nil {
 		return "", err
 	} else {
-		return FilePath(tmp.Name()), nil
+		z := ZipPath(tmp.Name())
+		if !z.IsValid() {
+			return "", errors.New("invalid zip")
+		}
+		return z, nil
 	}
 }
 
@@ -201,6 +205,10 @@ func (p ZipPath) String() string {
 
 func (p ZipPath) IsValid() bool {
 	return strings.HasSuffix(strings.ToLower(p.FullPath()), ".zip")
+}
+
+func (p ZipPath) Move(dest ZipPath) error {
+	return FilePath(p).Move(FilePath(dest))
 }
 
 // DirPath functions
