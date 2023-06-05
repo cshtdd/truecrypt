@@ -2,6 +2,7 @@ package encryption_test
 
 import (
 	"bytes"
+	"path/filepath"
 	"strings"
 	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/encryption"
@@ -15,9 +16,10 @@ import (
 func TestEndToEnd(t *testing.T) {
 	// create settings that point to a decrypted folder
 	sp := helpers.CreateTemp(t)
+	zipInNestedDir := paths.ZipPath(filepath.Join(helpers.CreateTempDir(t).FullPath(), "folder1/folder2/a.zip"))
 	s := settings.Settings{
 		DecryptedFolder: helpers.CreateTempDir(t),
-		EncryptedFile:   helpers.CreateTempZip(t),
+		EncryptedFile:   zipInNestedDir,
 	}
 	// create a test directory with many files
 	helpers.CreateSampleNestedStructure(t, s.DecryptedFolder)
