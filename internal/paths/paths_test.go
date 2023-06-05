@@ -60,7 +60,7 @@ func TestDirFullPath(t *testing.T) {
 	}
 }
 
-func TestCreateDir(t *testing.T) {
+func TestFilePathCreateDir(t *testing.T) {
 	t1 := helpers.CreateTempDir(t)
 	t2 := helpers.CreateTempDirInHome(t)
 
