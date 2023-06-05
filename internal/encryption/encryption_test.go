@@ -1,9 +1,10 @@
-package encryption
+package encryption_test
 
 import (
 	"bytes"
 	"strings"
 	"tddapps.com/truecrypt/internal"
+	"tddapps.com/truecrypt/internal/encryption"
 	"tddapps.com/truecrypt/internal/paths"
 	"testing"
 
@@ -47,7 +48,7 @@ func TestEndToEnd(t *testing.T) {
 		},
 		SettingsPath: sp,
 	}
-	if err := Encrypt(inputEncrypt); err != nil {
+	if err := encryption.Encrypt(inputEncrypt); err != nil {
 		t.Fatalf("Error encrypting data, err: %s", err)
 	}
 
@@ -67,7 +68,7 @@ func TestEndToEnd(t *testing.T) {
 		},
 		SettingsPath: sp,
 	}
-	if err := Decrypt(inputDecrypt); err != nil {
+	if err := encryption.Decrypt(inputDecrypt); err != nil {
 		t.Fatalf("Error decrypting data, err: %s", err)
 	}
 
