@@ -37,6 +37,10 @@ func Encrypt(in internal.Input) error {
 		return err
 	}
 
+	if !s.EncryptedFile.IsValid() { // TODO: test the negative paths
+		return errors.New("invalid encrypted file")
+	}
+
 	switch exists, err := s.DecryptedFolder.Exists(); { // TODO: test the negative paths
 	case err != nil:
 		return err
@@ -80,6 +84,9 @@ func Decrypt(in internal.Input) error {
 	case !exists:
 		return errors.New("encrypted file does not exist")
 	}
+	if !s.EncryptedFile.IsValid() { // TODO: test the negative paths
+		return errors.New("invalid encrypted file")
+	}
 
 	switch exists, err := s.DecryptedFolder.Exists(); { // TODO: test the negative paths
 	case err != nil:
@@ -97,13 +104,13 @@ func Decrypt(in internal.Input) error {
 	return extract(s.EncryptedFile, s.DecryptedFolder, password)
 }
 
-func compress(sourceDir paths.DirPath, dest paths.FilePath, password string) error {
+func compress(sourceDir paths.DirPath, dest paths.ZipPath, password string) error {
 	// TODO: maybe figure out a way to inject this method
 	if _, err := exec.Command("zip", "-v").Output(); err != nil { // TODO display this output
 		return err
 	}
 
-	tmp, err := paths.CreateTempFile()
+	tmp, err := paths.CreateTempZipFile()
 	if err != nil {
 		return err
 	}
@@ -117,7 +124,7 @@ func compress(sourceDir paths.DirPath, dest paths.FilePath, password string) err
 	return tmp.Move(dest)
 }
 
-func extract(source paths.FilePath, dest paths.DirPath, password string) error {
+func extract(source paths.ZipPath, dest paths.DirPath, password string) error {
 	// TODO: maybe figure out a way to inject this method
 	if _, err := exec.Command("unzip", "-v").Output(); err != nil { // TODO display this output
 		return err

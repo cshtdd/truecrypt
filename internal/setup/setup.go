@@ -43,7 +43,7 @@ func Run(in internal.Input) error {
 	case err != nil:
 		return err
 	case read:
-		s.EncryptedFile = paths.FilePath(line)
+		s.EncryptedFile = paths.ZipPath(line)
 	}
 	exists, err := s.EncryptedFile.Exists()
 	if err != nil {
@@ -51,6 +51,9 @@ func Run(in internal.Input) error {
 	}
 	if !exists {
 		return errors.New("encrypted file does not exist")
+	}
+	if !s.EncryptedFile.IsValid() {
+		return errors.New("invalid encrypted file")
 	}
 
 	// reading decrypted folder

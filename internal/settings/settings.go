@@ -9,7 +9,7 @@ import (
 	"tddapps.com/truecrypt/internal/paths"
 )
 
-// Reads the default settings path.
+// DefaultSettingsPath Reads the default settings path.
 // Supports environment variable overrides.
 func DefaultSettingsPath() paths.FilePath {
 	if override, found := os.LookupEnv(envSettings); found {
@@ -19,7 +19,7 @@ func DefaultSettingsPath() paths.FilePath {
 	return "~/.config/truecrypt/settings.json"
 }
 
-// Reads the default decrypted folder.
+// DefaultDecryptedFolder Reads the default decrypted folder.
 // Supports environment variable overrides.
 func DefaultDecryptedFolder() paths.DirPath {
 	if override, found := os.LookupEnv(envDecrypted); found {
@@ -31,7 +31,7 @@ func DefaultDecryptedFolder() paths.DirPath {
 
 type Settings struct {
 	DecryptedFolder paths.DirPath
-	EncryptedFile   paths.FilePath // TODO: change this to ZipPath
+	EncryptedFile   paths.ZipPath
 }
 
 func LoadFrom(p paths.FilePath) (Settings, error) {

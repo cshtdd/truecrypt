@@ -17,7 +17,7 @@ func TestEndToEnd(t *testing.T) {
 	sp := helpers.CreateTemp(t)
 	s := settings.Settings{
 		DecryptedFolder: helpers.CreateTempDir(t),
-		EncryptedFile:   helpers.CreateTemp(t),
+		EncryptedFile:   helpers.CreateTempZip(t),
 	}
 	// create a test directory with many files
 	helpers.CreateSampleNestedStructure(t, s.DecryptedFolder)

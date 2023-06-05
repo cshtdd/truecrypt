@@ -58,26 +58,3 @@ func TestSettingsSerialization(t *testing.T) {
 		t.Errorf("got %v+, want %v+", x, s)
 	}
 }
-
-func TestSettingsIsValidEncryptedFile(t *testing.T) {
-	tmp := helpers.CreateTemp(t)
-
-	tests := []struct {
-		file        paths.FilePath
-		want        bool
-		description string
-	}{
-		{"", false, "Empty file does not exist"},
-		{"not_found", false, "Not found file does not exist"},
-		{tmp, true, "File exists"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.description, func(t *testing.T) {
-			s := settings.Settings{EncryptedFile: test.file}
-			if got, _ := s.EncryptedFile.Exists(); got != test.want {
-				t.Errorf("s.IsValidEncryptedFile(%s) = %t, want %t", test.file, got, test.want)
-			}
-		})
-	}
-}
