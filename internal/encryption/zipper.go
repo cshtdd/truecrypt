@@ -15,7 +15,7 @@ func newZipper(in *internal.Input) zipper {
 }
 
 func (z zipper) Compress(s settings.Settings, password string) error {
-	if _, err := exec.Command("zip", "-v").Output(); err != nil { // TODO display this output
+	if err := z.Run(exec.Command("zip", "-v")); err != nil {
 		return err
 	}
 
@@ -30,7 +30,7 @@ func (z zipper) Compress(s settings.Settings, password string) error {
 
 	cmd := exec.Command("zip", "-er", "-P", password, tmp.FullPath(), ".")
 	cmd.Dir = s.DecryptedFolder.FullPath()
-	if _, err := cmd.Output(); err != nil { // TODO: display this output
+	if err := z.Run(cmd); err != nil {
 		return err
 	}
 
@@ -38,7 +38,7 @@ func (z zipper) Compress(s settings.Settings, password string) error {
 }
 
 func (z zipper) Extract(s settings.Settings, password string) error {
-	if _, err := exec.Command("unzip", "-v").Output(); err != nil { // TODO display this output
+	if err := z.Run(exec.Command("unzip", "-v")); err != nil {
 		return err
 	}
 
@@ -47,6 +47,11 @@ func (z zipper) Extract(s settings.Settings, password string) error {
 	}
 
 	cmd := exec.Command("unzip", "-P", password, "-n", s.EncryptedFile.FullPath(), "-d", s.DecryptedFolder.FullPath())
-	_, err := cmd.Output() // TODO: display this output
+	return z.Run(cmd)
+}
+
+func (z zipper) Run(cmd *exec.Cmd) error {
+	o, err := cmd.Output()
+	z.Writer.Write(o)
 	return err
 }
