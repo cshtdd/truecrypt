@@ -3,9 +3,16 @@ package encryption
 import (
 	"errors"
 	"tddapps.com/truecrypt/internal"
+	"tddapps.com/truecrypt/internal/settings"
 )
 
-// encrypt program
+type Compressor interface {
+	Compress(s settings.Settings, password string) error
+}
+
+func Encrypt(in *internal.Input) error {
+	return encrypt(in, newZipper(in))
+}
 
 func encrypt(in *internal.Input, c Compressor) error {
 	s, err := loadSettings(in)

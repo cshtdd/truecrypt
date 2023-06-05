@@ -3,9 +3,16 @@ package encryption
 import (
 	"errors"
 	"tddapps.com/truecrypt/internal"
+	"tddapps.com/truecrypt/internal/settings"
 )
 
-// decrypt program
+type Extractor interface {
+	Extract(s settings.Settings, password string) error
+}
+
+func Decrypt(in *internal.Input) error {
+	return decrypt(in, newZipper(in))
+}
 
 func decrypt(in *internal.Input, e Extractor) error {
 	s, err := loadSettings(in)
