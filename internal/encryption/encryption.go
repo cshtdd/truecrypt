@@ -115,6 +115,10 @@ func compress(sourceDir paths.DirPath, dest paths.ZipPath, password string) erro
 		return err
 	}
 
+	if err := tmp.Delete(); err != nil {
+		return err
+	}
+
 	cmd := exec.Command("zip", "-er", "-P", password, tmp.FullPath(), sourceDir.Base())
 	cmd.Dir = sourceDir.DirName()
 	if _, err := cmd.Output(); err != nil { // TODO display this output
@@ -134,7 +138,7 @@ func extract(source paths.ZipPath, dest paths.DirPath, password string) error {
 		return err
 	}
 
-	cmd := exec.Command("unzip", "-n", source.FullPath(), "-d", dest.FullPath(), "-P", password)
+	cmd := exec.Command("unzip", "-P", password, "-n", source.FullPath(), "-d", dest.FullPath())
 	_, err := cmd.Output()
 	return err
 }
