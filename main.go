@@ -48,20 +48,20 @@ func init() {
 type ExitCode int
 
 type Program struct {
-	Input     internal.Input
+	Input     *internal.Input
 	Name      string
 	ErrorCode ExitCode
 }
 
 func NewProgram(name string, errorCode ExitCode) *Program {
 	return &Program{
-		Input:     *input,
+		Input:     input,
 		Name:      name,
 		ErrorCode: errorCode,
 	}
 }
 
-func (p *Program) Run(program func(internal.Input) error) {
+func (p *Program) Run(program func(*internal.Input) error) {
 	p.Input.WriteLine(p.Name)
 
 	err := program(p.Input)
@@ -89,9 +89,9 @@ func main() {
 	case flagClean:
 		NewProgram("Clean", 5).Run(clean.Run)
 	case flagCleanSettings:
-		NewProgram("Clean Settings", 6).Run(clean.CleanSettings)
+		NewProgram("Clean Settings", 6).Run(clean.Settings)
 	default:
-		NewProgram("Action Missing", 1).Run(func(i internal.Input) error {
+		NewProgram("Action Missing", 1).Run(func(i *internal.Input) error {
 			flag.Usage()
 			return errors.New("empty arguments")
 		})

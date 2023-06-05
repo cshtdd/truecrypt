@@ -7,7 +7,7 @@ import (
 
 // encrypt program
 
-func encrypt(in internal.Input, c Compressor) error {
+func encrypt(in *internal.Input, c Compressor) error {
 	s, err := loadSettings(in)
 	if err != nil {
 		return err
@@ -24,7 +24,7 @@ func encrypt(in internal.Input, c Compressor) error {
 		return errors.New("decrypted folder does not exist")
 	}
 
-	password, err := readPassword(&in)
+	password, err := readPassword(in)
 	if err != nil {
 		return err
 	}

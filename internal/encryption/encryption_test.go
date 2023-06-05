@@ -38,7 +38,7 @@ func TestEndToEnd(t *testing.T) {
 
 	// encrypt the data
 	var fakeOutEncrypt bytes.Buffer
-	inputEncrypt := internal.Input{
+	inputEncrypt := &internal.Input{
 		IO: internal.IO{
 			Reader: strings.NewReader(
 				strings.Join([]string{password, password, ""}, "\n"),
@@ -58,7 +58,7 @@ func TestEndToEnd(t *testing.T) {
 
 	// decrypt the data
 	var fakeOutDecrypt bytes.Buffer
-	inputDecrypt := internal.Input{
+	inputDecrypt := &internal.Input{
 		IO: internal.IO{
 			Reader: strings.NewReader(
 				strings.Join([]string{password, ""}, "\n"),

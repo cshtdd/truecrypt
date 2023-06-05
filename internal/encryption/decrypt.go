@@ -7,7 +7,7 @@ import (
 
 // decrypt program
 
-func decrypt(in internal.Input, e Extractor) error {
+func decrypt(in *internal.Input, e Extractor) error {
 	s, err := loadSettings(in)
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func decrypt(in internal.Input, e Extractor) error {
 		return errors.New("decrypted folder exists")
 	}
 
-	password, err := readPassword(&in)
+	password, err := readPassword(in)
 	if err != nil {
 		return err
 	}

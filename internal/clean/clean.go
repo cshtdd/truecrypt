@@ -7,7 +7,7 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-func Run(in internal.Input) error {
+func Run(in *internal.Input) error {
 	existingSettings, err := settings.LoadFrom(in.SettingsPath)
 	if err != nil {
 		return err
@@ -16,7 +16,7 @@ func Run(in internal.Input) error {
 	return existingSettings.DecryptedFolder.Delete()
 }
 
-func CleanSettings(in internal.Input) error {
+func Settings(in *internal.Input) error {
 	in.WriteLine(fmt.Sprintf("Deleting settings at: %s", in.SettingsPath))
 	return in.SettingsPath.Delete()
 }

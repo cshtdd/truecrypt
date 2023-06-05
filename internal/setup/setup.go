@@ -9,22 +9,7 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-func loadSettings(in internal.Input, defaultSettings settings.Settings) (existing bool, s settings.Settings) {
-	exists, err := in.SettingsPath.Exists()
-	if !exists || err != nil {
-		return false, defaultSettings
-	}
-
-	var emptySettings settings.Settings
-	existingSettings, err := settings.LoadFrom(in.SettingsPath)
-	if err != nil || existingSettings == emptySettings {
-		return false, defaultSettings
-	}
-
-	return true, existingSettings
-}
-
-func Run(in internal.Input) error {
+func Run(in *internal.Input) error {
 	// loading settings
 	defaultSettings := settings.Settings{
 		DecryptedFolder: settings.DefaultDecryptedFolder(),
@@ -80,4 +65,19 @@ func Run(in internal.Input) error {
 		return err
 	}
 	return nil
+}
+
+func loadSettings(in *internal.Input, defaultSettings settings.Settings) (existing bool, s settings.Settings) {
+	exists, err := in.SettingsPath.Exists()
+	if !exists || err != nil {
+		return false, defaultSettings
+	}
+
+	var emptySettings settings.Settings
+	existingSettings, err := settings.LoadFrom(in.SettingsPath)
+	if err != nil || existingSettings == emptySettings {
+		return false, defaultSettings
+	}
+
+	return true, existingSettings
 }

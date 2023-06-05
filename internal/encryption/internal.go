@@ -9,7 +9,7 @@ import (
 
 // Shared IO functions
 
-func loadSettings(in internal.Input) (settings.Settings, error) {
+func loadSettings(in *internal.Input) (settings.Settings, error) {
 	in.WriteLine(fmt.Sprintf("Loading settings from: %s", in.SettingsPath))
 	s, err := settings.LoadFrom(in.SettingsPath)
 	if err == nil {
@@ -20,7 +20,6 @@ func loadSettings(in internal.Input) (settings.Settings, error) {
 
 func readPassword(in *internal.Input) (string, error) {
 	in.WriteLine("Enter encryption password:")
-	// TODO: make sure ReadLine is not such a diva that needs a pointer, or pass an in pointer everywhere
 	switch read, line, err := in.ReadLine(); {
 	case err != nil:
 		return "", err

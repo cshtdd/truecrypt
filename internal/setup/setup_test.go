@@ -34,7 +34,7 @@ func TestRunsOutputValidation(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			var fakeOut bytes.Buffer
-			input := internal.Input{
+			input := &internal.Input{
 				IO: internal.IO{
 					Reader: strings.NewReader(test.encryptedPath.String()),
 					Writer: &fakeOut,
@@ -89,7 +89,7 @@ func TestRunsSavesEncryptedPath(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			var fakeOut bytes.Buffer
-			input := internal.Input{
+			input := &internal.Input{
 				IO: internal.IO{
 					Reader: strings.NewReader(test.encryptedPath.String()),
 					Writer: &fakeOut,
@@ -142,7 +142,7 @@ func TestRunsSavesDecryptedFolder(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			var fakeOut bytes.Buffer
-			input := internal.Input{
+			input := &internal.Input{
 				IO: internal.IO{
 					Reader: strings.NewReader(
 						strings.Join([]string{helpers.CreateTempZip(t).String(), test.inputDecryptedFolder.String()}, "\n"),
@@ -187,7 +187,7 @@ func TestRunFailsWhenEncryptedFileNotFound(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
 			var fakeOut bytes.Buffer
-			input := internal.Input{
+			input := &internal.Input{
 				IO: internal.IO{
 					Reader: strings.NewReader(test.file.String()),
 					Writer: &fakeOut,
@@ -234,7 +234,7 @@ func TestLoadsExistingSettings(t *testing.T) {
 
 			// fake user input
 			var fakeOut bytes.Buffer
-			input := internal.Input{
+			input := &internal.Input{
 				IO: internal.IO{
 					Reader: strings.NewReader(
 						strings.Join(test.inputLines, "\n"),
@@ -286,7 +286,7 @@ func TestRunFailsWhenDecryptedFolderIsBlank(t *testing.T) {
 	}
 
 	var fakeOut bytes.Buffer
-	input := internal.Input{
+	input := &internal.Input{
 		IO: internal.IO{
 			Reader: strings.NewReader(helpers.CreateTemp(t).String()),
 			Writer: &fakeOut,
