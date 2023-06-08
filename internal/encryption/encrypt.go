@@ -6,16 +6,19 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-type Compressor interface {
-	Compress(s settings.Settings, password string) error
-}
-
+// Encrypt is the encryption program
 func Encrypt(in *internal.Input) error {
-	return encrypt(in, newZipper(in))
+	p := &encryptInput{
+		in: in,
+		c:  newZipper(in),
+	}
+	p.l = p
+	return encryptProgram(p)
 }
 
-func encrypt(in *internal.Input, c Compressor) error {
-	s, err := loadSettings(in)
+// private implementation with test shims
+func encryptProgram(e *encryptInput) error {
+	s, err := e.l.load()
 	if err != nil {
 		return err
 	}
@@ -31,14 +34,14 @@ func encrypt(in *internal.Input, c Compressor) error {
 		return errors.New("decrypted folder does not exist")
 	}
 
-	password, err := readPassword(in)
+	password, err := readPassword(e.in)
 	if err != nil {
 		return err
 	}
 
 	// ask for password confirmation
-	in.WriteLine("Confirm password:")
-	switch read, line, err := in.ReadLine(); {
+	e.in.WriteLine("Confirm password:")
+	switch read, line, err := e.in.ReadLine(); {
 	case err != nil:
 		return err
 	case !read || line != password:
@@ -47,10 +50,21 @@ func encrypt(in *internal.Input, c Compressor) error {
 	// TODO: test password mismatch
 
 	// TODO: test zip failure
-	if err := c.Compress(s, password); err != nil {
+	if err := e.c.compress(s, password); err != nil {
 		return err
 	}
 
 	// wipe the original directory on success
 	return s.DecryptedFolder.Delete()
+}
+
+// test shims
+type encryptInput struct {
+	in *internal.Input
+	c  compressor
+	l  settingsLoader
+}
+
+func (e *encryptInput) load() (settings.Settings, error) {
+	return loadSettings(e.in)
 }

@@ -7,14 +7,24 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-// zipper Default Compressor & Extractor
+// compressor converts a directory into an encrypted file
+type compressor interface {
+	compress(s settings.Settings, password string) error
+}
+
+// extractor converts a zip into an extracted directory
+type extractor interface {
+	extract(s settings.Settings, password string) error
+}
+
+// zipper Default compressor & extractor
 type zipper internal.IO
 
 func newZipper(in *internal.Input) zipper {
 	return zipper(in.IO)
 }
 
-func (z zipper) Compress(s settings.Settings, password string) error {
+func (z zipper) compress(s settings.Settings, password string) error {
 	if err := z.Run(exec.Command("zip", "-v")); err != nil {
 		return err
 	}
@@ -37,7 +47,7 @@ func (z zipper) Compress(s settings.Settings, password string) error {
 	return tmp.Move(s.EncryptedFile)
 }
 
-func (z zipper) Extract(s settings.Settings, password string) error {
+func (z zipper) extract(s settings.Settings, password string) error {
 	if err := z.Run(exec.Command("unzip", "-v")); err != nil {
 		return err
 	}

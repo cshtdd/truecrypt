@@ -6,16 +6,19 @@ import (
 	"tddapps.com/truecrypt/internal/settings"
 )
 
-type Extractor interface {
-	Extract(s settings.Settings, password string) error
-}
-
+// Decrypt is the decrypt program
 func Decrypt(in *internal.Input) error {
-	return decrypt(in, newZipper(in))
+	p := &decryptInput{
+		in: in,
+		e:  newZipper(in),
+	}
+	p.l = p
+	return decryptProgram(p)
 }
 
-func decrypt(in *internal.Input, e Extractor) error {
-	s, err := loadSettings(in)
+// private implementation with test shims
+func decryptProgram(d *decryptInput) error {
+	s, err := loadSettings(d.in)
 	if err != nil {
 		return err
 	}
@@ -37,11 +40,22 @@ func decrypt(in *internal.Input, e Extractor) error {
 		return errors.New("decrypted folder exists")
 	}
 
-	password, err := readPassword(in)
+	password, err := readPassword(d.in)
 	if err != nil {
 		return err
 	}
 
 	// TODO: test unzip failure
-	return e.Extract(s, password)
+	return d.e.extract(s, password)
+}
+
+// test shims
+type decryptInput struct {
+	in *internal.Input
+	e  extractor
+	l  settingsLoader
+}
+
+func (d *decryptInput) load() (settings.Settings, error) {
+	return loadSettings(d.in)
 }

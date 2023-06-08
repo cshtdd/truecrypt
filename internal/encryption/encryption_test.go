@@ -35,7 +35,7 @@ func TestEncryption_EndToEnd(t *testing.T) {
 			helpers.CreateSampleNestedStructure(t, s.DecryptedFolder)
 			// save the settings
 			if err := s.Save(sp); err != nil {
-				t.Fatalf("Error saving encrypt settings, err: %s", err)
+				t.Fatalf("Error saving encryptProgram settings, err: %s", err)
 			}
 
 			// clone the source because it will get wiped
@@ -47,7 +47,7 @@ func TestEncryption_EndToEnd(t *testing.T) {
 				t.Fatalf("Expected clone to match, got: %s", m)
 			}
 
-			// encrypt the data
+			// encryptProgram the data
 			var fakeOutEncrypt bytes.Buffer
 			inputEncrypt := &internal.Input{
 				IO: internal.IO{
@@ -69,7 +69,7 @@ func TestEncryption_EndToEnd(t *testing.T) {
 				t.Fatalf("Decrypted source should not exist")
 			}
 
-			// decrypt the data
+			// decryptProgram the data
 			var fakeOutDecrypt bytes.Buffer
 			inputDecrypt := &internal.Input{
 				IO: internal.IO{

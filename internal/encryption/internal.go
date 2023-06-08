@@ -9,6 +9,10 @@ import (
 
 // Shared IO functions
 
+type settingsLoader interface {
+	load() (settings.Settings, error)
+}
+
 func loadSettings(in *internal.Input) (settings.Settings, error) {
 	in.WriteLine(fmt.Sprintf("Loading settings from: %s", in.SettingsPath))
 	s, err := settings.LoadFrom(in.SettingsPath)
