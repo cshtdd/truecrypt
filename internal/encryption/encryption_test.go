@@ -1,10 +1,7 @@
 package encryption_test
 
 import (
-	"bytes"
 	"path/filepath"
-	"strings"
-	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/encryption"
 	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
@@ -48,19 +45,8 @@ func TestEncryption_EndToEnd(t *testing.T) {
 			}
 
 			// encryptProgram the data
-			var fakeOutEncrypt bytes.Buffer
-			inputEncrypt := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(
-						strings.Join([]string{
-							test.password, test.password, "",
-						}, "\n"),
-					),
-					Writer: &fakeOutEncrypt,
-				},
-				SettingsPath: sp,
-			}
-			if err := encryption.Encrypt(inputEncrypt); err != nil {
+			fe := helpers.NewFakeInputWithSettingsPath(sp, test.password, test.password)
+			if err := encryption.Encrypt(fe.In()); err != nil {
 				t.Fatalf("Error encrypting data, err: %s", err)
 			}
 
@@ -70,17 +56,8 @@ func TestEncryption_EndToEnd(t *testing.T) {
 			}
 
 			// decryptProgram the data
-			var fakeOutDecrypt bytes.Buffer
-			inputDecrypt := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(
-						strings.Join([]string{test.password, ""}, "\n"),
-					),
-					Writer: &fakeOutDecrypt,
-				},
-				SettingsPath: sp,
-			}
-			if err := encryption.Decrypt(inputDecrypt); err != nil {
+			fd := helpers.NewFakeInputWithSettingsPath(sp, test.password)
+			if err := encryption.Decrypt(fd.In()); err != nil {
 				t.Fatalf("Error decrypting data, err: %s", err)
 			}
 

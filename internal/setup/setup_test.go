@@ -1,12 +1,10 @@
 package setup_test
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"testing"
 
-	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 	"tddapps.com/truecrypt/internal/setup"
@@ -33,17 +31,12 @@ func TestRunsOutputValidation(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			var fakeOut bytes.Buffer
-			input := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(test.encryptedPath.String()),
-					Writer: &fakeOut,
-				},
-				SettingsPath: test.settingsPath,
-			}
+			f := helpers.NewFakeInputWithSettingsPath(
+				test.settingsPath, test.encryptedPath.String(),
+			)
 
 			// run the program
-			if err := setup.Run(input); err != nil {
+			if err := setup.Run(f.In()); err != nil {
 				t.Error("Run failed", err)
 			}
 
@@ -60,8 +53,8 @@ func TestRunsOutputValidation(t *testing.T) {
 				fmt.Sprintf("Settings path: %s\n", test.settingsPath.String()),
 			}
 			for _, line := range expectedLines {
-				if !strings.Contains(fakeOut.String(), line) {
-					t.Fatalf("Run() = %s, want %s", fakeOut.String(), line)
+				if !strings.Contains(f.Out(), line) {
+					t.Fatalf("Run() = %s, want %s", f.Out(), line)
 				}
 			}
 		})
@@ -88,17 +81,12 @@ func TestRunsSavesEncryptedPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			var fakeOut bytes.Buffer
-			input := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(test.encryptedPath.String()),
-					Writer: &fakeOut,
-				},
-				SettingsPath: test.settingsPath,
-			}
+			f := helpers.NewFakeInputWithSettingsPath(
+				test.settingsPath, test.encryptedPath.String(),
+			)
 
 			// run the program
-			if err := setup.Run(input); err != nil {
+			if err := setup.Run(f.In()); err != nil {
 				t.Error("Run failed", err)
 			}
 
@@ -141,19 +129,13 @@ func TestRunsSavesDecryptedFolder(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			var fakeOut bytes.Buffer
-			input := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(
-						strings.Join([]string{helpers.CreateTempZip(t).String(), test.inputDecryptedFolder.String()}, "\n"),
-					),
-					Writer: &fakeOut,
-				},
-				SettingsPath: test.settingsPath,
-			}
+			f := helpers.NewFakeInputWithSettingsPath(
+				test.settingsPath,
+				helpers.CreateTempZip(t).String(), test.inputDecryptedFolder.String(),
+			)
 
 			// run the program
-			if err := setup.Run(input); err != nil {
+			if err := setup.Run(f.In()); err != nil {
 				t.Error("Run failed", err)
 			}
 
@@ -186,16 +168,9 @@ func TestRunFailsWhenEncryptedFileNotFound(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.description, func(t *testing.T) {
-			var fakeOut bytes.Buffer
-			input := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(test.file.String()),
-					Writer: &fakeOut,
-				},
-				SettingsPath: "does_not_matter.json",
-			}
+			f := helpers.NewFakeInput(test.file.String())
 			// run the program
-			if err := setup.Run(input); err == nil {
+			if err := setup.Run(f.In()); err == nil {
 				t.Error("Expected Error")
 			}
 		})
@@ -233,19 +208,10 @@ func TestLoadsExistingSettings(t *testing.T) {
 			test.input.Save(settingsPath)
 
 			// fake user input
-			var fakeOut bytes.Buffer
-			input := &internal.Input{
-				IO: internal.IO{
-					Reader: strings.NewReader(
-						strings.Join(test.inputLines, "\n"),
-					),
-					Writer: &fakeOut,
-				},
-				SettingsPath: settingsPath,
-			}
+			f := helpers.NewFakeInputWithSettingsPath(settingsPath, test.inputLines...)
 
 			// run the program
-			if err := setup.Run(input); err != nil {
+			if err := setup.Run(f.In()); err != nil {
 				t.Error("Run failed", err)
 			}
 
@@ -266,8 +232,8 @@ func TestLoadsExistingSettings(t *testing.T) {
 				fmt.Sprintf("Enter decrypted folder:\n\tassumes \"%s\" if blank\n", test.input.DecryptedFolder),
 			}
 			for _, line := range expectedLines {
-				if !strings.Contains(fakeOut.String(), line) {
-					t.Fatalf("Output contain mismatch. want = %s, got = %s", line, fakeOut.String())
+				if !strings.Contains(f.Out(), line) {
+					t.Fatalf("Output contain mismatch. want = %s, got = %s", line, f.Out())
 				}
 			}
 		})
@@ -285,16 +251,9 @@ func TestRunFailsWhenDecryptedFolderIsBlank(t *testing.T) {
 		t.Fatalf("Error saving settings err: %s", err)
 	}
 
-	var fakeOut bytes.Buffer
-	input := &internal.Input{
-		IO: internal.IO{
-			Reader: strings.NewReader(helpers.CreateTemp(t).String()),
-			Writer: &fakeOut,
-		},
-		SettingsPath: settingsPath,
-	}
+	f := helpers.NewFakeInputWithSettingsPath(settingsPath, helpers.CreateTemp(t).String())
 
-	if err := setup.Run(input); err == nil {
+	if err := setup.Run(f.In()); err == nil {
 		t.Error("Expected Error")
 	}
 }
