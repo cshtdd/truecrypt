@@ -1,4 +1,4 @@
-# TrueCypt Alternative  
+# TrueCrypt Alternative  
 
 ## Setup  
 
@@ -14,14 +14,8 @@
 
 ## Development  
 
-Build
+Build & test
 
 ```bash
-go build
-```
-
-Test
-
-```bash
-go test ./...
+./build.sh
 ```
