@@ -48,10 +48,11 @@ func TestEncrypt_FailsOnInvalidDecryptedFolder(t *testing.T) {
 }
 
 func TestEncrypt_FailsOnPasswordMismatch(t *testing.T) {
+	d := helpers.CreateTempDir(t)
 	e := encryptInput{
 		in: helpers.NewFakeInput("password", "mismatch").In(),
 		l: newFakeSettings(settings.Settings{
-			DecryptedFolder: helpers.CreateTempDir(t),
+			DecryptedFolder: d,
 			EncryptedFile:   helpers.CreateTempZip(t),
 		}),
 	}
@@ -59,15 +60,19 @@ func TestEncrypt_FailsOnPasswordMismatch(t *testing.T) {
 	if err := encryptProgram(&e); err == nil || err.Error() != "passwords mismatch" {
 		t.Fatalf("Unexpected error %s", err)
 	}
+
+	helpers.EnsureExists(t, d, true)
 }
 
 func TestEncrypt_FailsOnCompressionFailure(t *testing.T) {
 	z := newFakeZipperWithError()
+	f := helpers.CreateTempZip(t)
+	d := helpers.CreateTempDir(t)
 	e := encryptInput{
 		in: helpers.NewFakeInput("password", "password").In(),
 		l: newFakeSettings(settings.Settings{
-			DecryptedFolder: helpers.CreateTempDir(t),
-			EncryptedFile:   helpers.CreateTempZip(t),
+			DecryptedFolder: d,
+			EncryptedFile:   f,
 		}),
 		c: z,
 	}
@@ -75,4 +80,7 @@ func TestEncrypt_FailsOnCompressionFailure(t *testing.T) {
 	if err := encryptProgram(&e); err != z.Err() {
 		t.Fatalf("Unexpected error %s", err)
 	}
+
+	helpers.EnsureExists(t, f, false)
+	helpers.EnsureExists(t, d, true)
 }

@@ -44,6 +44,7 @@ func encryptProgram(e *encryptInput) error {
 	}
 
 	if err := e.c.compress(s, password); err != nil {
+		_ = s.EncryptedFile.Delete() // delete the encrypted file to avoid trash
 		return err
 	}
 
