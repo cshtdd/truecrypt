@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"tddapps.com/truecrypt/internal/paths"
@@ -57,7 +58,7 @@ func renameToZip(t *testing.T, f paths.FilePath) paths.ZipPath {
 		t.Fatalf("Error renaming temp file")
 	}
 	t.Cleanup(func() {
-		if err := f.Delete(); err != nil {
+		if err := z.Delete(); err != nil {
 			panic(err)
 		}
 	})
@@ -65,27 +66,37 @@ func renameToZip(t *testing.T, f paths.FilePath) paths.ZipPath {
 }
 
 func createTempInDir(t *testing.T, dir string) paths.FilePath {
-	tmp, err := os.CreateTemp(dir, "tc_settings")
+	tmp, err := os.CreateTemp(dir, tempPattern(t))
 	if err != nil {
 		t.Fatal("Cannot create tmp file", err)
 		return ""
 	}
 	p := paths.FilePath(tmp.Name())
 	t.Cleanup(func() {
-		p.Delete()
+		if err := p.Delete(); err != nil {
+			panic(err)
+		}
 	})
 	return p
 }
 
+func tempPattern(t *testing.T) string {
+	const unlimited = -1
+	name := strings.Replace(t.Name(), "/", "_", unlimited)
+	return fmt.Sprintf("tc_tmp_%s_", name)
+}
+
 func createTempDirInDir(t *testing.T, dir string) paths.DirPath {
-	result, err := os.MkdirTemp(dir, "tc_test")
+	result, err := os.MkdirTemp(dir, tempPattern(t))
 	if err != nil {
 		t.Fatal("Cannot create temp dir")
 		return ""
 	}
 	p := paths.DirPath(result)
 	t.Cleanup(func() {
-		p.Delete()
+		if err := p.Delete(); err != nil {
+			panic(err)
+		}
 	})
 	return p
 }
