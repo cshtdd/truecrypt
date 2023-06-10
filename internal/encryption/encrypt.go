@@ -23,11 +23,11 @@ func encryptProgram(e *encryptInput) error {
 		return err
 	}
 
-	if !s.EncryptedFile.IsValid() { // TODO: test the negative paths
+	if !s.EncryptedFile.IsValid() {
 		return errors.New("invalid encrypted file")
 	}
 
-	switch exists, err := s.DecryptedFolder.Exists(); { // TODO: test the negative paths
+	switch exists, err := s.DecryptedFolder.Exists(); {
 	case err != nil:
 		return err
 	case !exists:
@@ -47,9 +47,7 @@ func encryptProgram(e *encryptInput) error {
 	case !read || line != password:
 		return errors.New("passwords mismatch")
 	}
-	// TODO: test password mismatch
 
-	// TODO: test zip failure
 	if err := e.c.compress(s, password); err != nil {
 		return err
 	}
@@ -59,6 +57,7 @@ func encryptProgram(e *encryptInput) error {
 }
 
 // test shims
+
 type encryptInput struct {
 	in *internal.Input
 	c  compressor
