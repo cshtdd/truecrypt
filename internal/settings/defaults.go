@@ -22,5 +22,5 @@ func DefaultDecryptedFolder() paths.DirPath {
 		return paths.DirPath(override)
 	}
 
-	return "~/decrypted_folder/t"
+	return "~/decrypted_folder"
 }

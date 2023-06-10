@@ -24,7 +24,7 @@ func TestDefaultSettingsPath_EnvOverride(t *testing.T) {
 }
 
 func TestDefaultDecryptedFolder(t *testing.T) {
-	expected := paths.DirPath("~/decrypted_folder/t")
+	expected := paths.DirPath("~/decrypted_folder")
 	if p := settings.DefaultDecryptedFolder(); p != expected {
 		t.Errorf("DefaultDecryptedFolder() = %s, want %s", p, expected)
 	}
