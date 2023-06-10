@@ -12,15 +12,15 @@ SETTINGS=("darwin_arm64" "darwin_amd64")
 
 for suffix in "${SETTINGS[@]}"
 do
-    suffix_pieces=(${suffix/_/ })
-	GOOS=${suffix_pieces[0]}
-	GOARCH=${suffix_pieces[1]}
+    suffix_pieces=(${suffix/_/ }) # only God understands this line
+	  GOOS=${suffix_pieces[0]}
+	  GOARCH=${suffix_pieces[1]}
     BINARY_PATH="${BINARY}${suffix}"
 
     echo "Testing Os: ${GOOS} Arch: ${GOARCH}"
-    env GOOS=$GOOS GOARCH=$GOARCH go clean -testcache || exit 1
-    env GOOS=$GOOS GOARCH=$GOARCH go test ./... || exit 1
+    env GOOS="${GOOS}" GOARCH="${GOARCH}" go clean -testcache || exit 1
+    env GOOS="${GOOS}" GOARCH="${GOARCH}" go test ./... || exit 1
 
     echo "Building for Os: ${GOOS} Arch: ${GOARCH} Output: ${BINARY_PATH}"
-    env GOOS=$GOOS GOARCH=$GOARCH go build -o "${BINARY_PATH}" || exit 1
+    env GOOS="${GOOS}" GOARCH="${GOARCH}" go build -o "${BINARY_PATH}" || exit 1
 done

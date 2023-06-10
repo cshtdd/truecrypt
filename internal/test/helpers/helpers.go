@@ -48,14 +48,18 @@ func CreateTempDirInHome(t *testing.T) paths.DirPath {
 
 func renameToZip(t *testing.T, f paths.FilePath) paths.ZipPath {
 	t.Cleanup(func() {
-		f.Delete()
+		if err := f.Delete(); err != nil {
+			panic(err)
+		}
 	})
 	z := paths.ZipPath(fmt.Sprintf("%s.zip", f))
 	if err := f.Move(paths.FilePath(z.FullPath())); err != nil {
 		t.Fatalf("Error renaming temp file")
 	}
 	t.Cleanup(func() {
-		z.Delete()
+		if err := f.Delete(); err != nil {
+			panic(err)
+		}
 	})
 	return z
 }
@@ -135,4 +139,15 @@ func GenerateRandomData(t *testing.T) []byte {
 		t.Errorf("Random data generation failed err: %s", err)
 	}
 	return data
+}
+
+func SetEnv(key string, value string, t *testing.T) {
+	if err := os.Setenv(key, value); err != nil {
+		t.Fatalf("Unexpected error setting env: %s, err: %s", key, err)
+	}
+	t.Cleanup(func() {
+		if err := os.Unsetenv(key); err != nil {
+			panic(err)
+		}
+	})
 }

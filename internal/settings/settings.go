@@ -19,8 +19,7 @@ func LoadFrom(p paths.FilePath) (Settings, error) {
 		return result, err
 	}
 
-	json.Unmarshal(bytes, &result)
-	return result, nil
+	return result, json.Unmarshal(bytes, &result)
 }
 
 func (s Settings) Save(p paths.FilePath) error {

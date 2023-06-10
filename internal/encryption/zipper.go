@@ -62,6 +62,6 @@ func (z zipper) extract(s settings.Settings, password string) error {
 
 func (z zipper) Run(cmd *exec.Cmd) error {
 	o, err := cmd.Output()
-	z.Writer.Write(o)
+	_, _ = z.Writer.Write(o) // ignored error because this is not in the critical path
 	return err
 }

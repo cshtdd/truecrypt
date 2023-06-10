@@ -205,7 +205,9 @@ func TestLoadsExistingSettings(t *testing.T) {
 		t.Run(test.description, func(t *testing.T) {
 			// seed settings
 			settingsPath := helpers.CreateTemp(t)
-			test.input.Save(settingsPath)
+			if err := test.input.Save(settingsPath); err != nil {
+				t.Fatalf("Unexpected error err: %s", err)
+			}
 
 			// fake user input
 			f := helpers.NewFakeInputWithSettingsPath(settingsPath, test.inputLines...)

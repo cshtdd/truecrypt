@@ -11,7 +11,9 @@ func TestSettings_Serialization(t *testing.T) {
 	tmp := helpers.CreateTemp(t)
 
 	s := settings.Settings{DecryptedFolder: "aaa/bbb", EncryptedFile: "ccc.zip"}
-	s.Save(tmp)
+	if err := s.Save(tmp); err != nil {
+		t.Fatalf("Unexpected error err: %s", err)
+	}
 
 	x, err := settings.LoadFrom(tmp)
 	if err != nil {
