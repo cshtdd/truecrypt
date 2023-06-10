@@ -39,13 +39,8 @@ func encryptProgram(e *encryptInput) error {
 		return err
 	}
 
-	// ask for password confirmation
-	e.in.WriteLine("Confirm password:")
-	switch read, line, err := e.in.ReadLine(); {
-	case err != nil:
+	if err := confirmPassword(e.in, password); err != nil {
 		return err
-	case !read || line != password:
-		return errors.New("passwords mismatch")
 	}
 
 	if err := e.c.compress(s, password); err != nil {

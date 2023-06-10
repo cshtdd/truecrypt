@@ -33,3 +33,15 @@ func readPassword(in *internal.Input) (string, error) {
 		return "", errors.New("empty or short passwords are not allowed")
 	}
 }
+
+func confirmPassword(in *internal.Input, password string) error {
+	in.WriteLine("Confirm password:")
+	switch read, line, err := in.ReadLine(); {
+	case err != nil:
+		return err
+	case !read || line != password:
+		return errors.New("passwords mismatch")
+	default:
+		return nil
+	}
+}
