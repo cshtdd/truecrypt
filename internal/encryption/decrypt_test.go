@@ -78,4 +78,6 @@ func TestDecrypt_FailsOnExtractionFailure(t *testing.T) {
 	if err := decryptProgram(&d); err != z.Err() {
 		t.Fatalf("Unexpected error %s", err)
 	}
+
+	helpers.EnsureExists(t, f, false)
 }

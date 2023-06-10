@@ -45,7 +45,12 @@ func decryptProgram(d *decryptInput) error {
 		return err
 	}
 
-	return d.e.extract(s, password)
+	if err := d.e.extract(s, password); err != nil {
+		_ = s.DecryptedFolder.Delete() // delete the decrypted folder to avoid trash
+		return err
+	}
+
+	return nil
 }
 
 // test shims
