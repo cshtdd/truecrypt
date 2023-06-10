@@ -18,22 +18,22 @@ func Decrypt(in *internal.Input) error {
 
 // private implementation with test shims
 func decryptProgram(d *decryptInput) error {
-	s, err := loadSettings(d.in)
+	s, err := d.l.load()
 	if err != nil {
 		return err
 	}
 
-	switch exists, err := s.EncryptedFile.Exists(); { // TODO: test the negative paths
+	switch exists, err := s.EncryptedFile.Exists(); {
 	case err != nil:
 		return err
 	case !exists:
 		return errors.New("encrypted file does not exist")
 	}
-	if !s.EncryptedFile.IsValid() { // TODO: test the negative paths
+	if !s.EncryptedFile.IsValid() {
 		return errors.New("invalid encrypted file")
 	}
 
-	switch exists, err := s.DecryptedFolder.Exists(); { // TODO: test the negative paths
+	switch exists, err := s.DecryptedFolder.Exists(); {
 	case err != nil:
 		return err
 	case exists:
@@ -45,7 +45,6 @@ func decryptProgram(d *decryptInput) error {
 		return err
 	}
 
-	// TODO: test unzip failure
 	return d.e.extract(s, password)
 }
 
