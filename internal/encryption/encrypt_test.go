@@ -1,26 +1,59 @@
 package encryption
 
 import (
+	"strings"
 	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 	"tddapps.com/truecrypt/internal/test/helpers"
 	"testing"
 )
 
+func TestEncrypt_SuccessOutput(t *testing.T) {
+	lines := []struct {
+		expected bool
+		line     string
+	}{
+		{true, "Enter encryption password:"},
+		{true, "Confirm password:"},
+		{false, "secret1"},
+	}
+	for _, test := range lines {
+		t.Run(test.line, func(t *testing.T) {
+			f := helpers.NewFakeInput("secret1", "secret1")
+			e := &encryptInput{
+				in: f.In(),
+				c:  newFakeZipper(),
+				l: newFakeSettings(settings.Settings{
+					DecryptedFolder: helpers.CreateTempDir(t),
+					EncryptedFile:   helpers.CreateTempZip(t),
+				}),
+			}
+
+			if err := encryptProgram(e); err != nil {
+				t.Fatalf("Unexpected error. err: %s", err)
+			}
+
+			if found := strings.Contains(f.Out(), test.line); found != test.expected {
+				t.Errorf("Line found got: %t want: %t output: %s", found, test.expected, f.Out())
+			}
+		})
+	}
+}
+
 func TestEncrypt_FailsOnSettingsLoadError(t *testing.T) {
 	s := newFakeSettingsWithError()
-	e := encryptInput{
+	e := &encryptInput{
 		in: helpers.NewFakeInput("password", "mismatch").In(),
 		l:  s,
 	}
 
-	if err := encryptProgram(&e); err != s.Err() {
+	if err := encryptProgram(e); err != s.Err() {
 		t.Fatalf("Unexpected error %s", err)
 	}
 }
 
 func TestEncrypt_FailsOnInvalidEncryptedFile(t *testing.T) {
-	e := encryptInput{
+	e := &encryptInput{
 		in: helpers.NewFakeInput("password", "password").In(),
 		l: newFakeSettings(settings.Settings{
 			DecryptedFolder: helpers.CreateTempDir(t),
@@ -28,13 +61,13 @@ func TestEncrypt_FailsOnInvalidEncryptedFile(t *testing.T) {
 		}),
 	}
 
-	if err := encryptProgram(&e); err == nil || err.Error() != "invalid encrypted file" {
+	if err := encryptProgram(e); err == nil || err.Error() != "invalid encrypted file" {
 		t.Fatalf("Unexpected error %s", err)
 	}
 }
 
 func TestEncrypt_FailsOnInvalidDecryptedFolder(t *testing.T) {
-	e := encryptInput{
+	e := &encryptInput{
 		in: helpers.NewFakeInput("password", "password").In(),
 		l: newFakeSettings(settings.Settings{
 			DecryptedFolder: "not_found",
@@ -42,14 +75,14 @@ func TestEncrypt_FailsOnInvalidDecryptedFolder(t *testing.T) {
 		}),
 	}
 
-	if err := encryptProgram(&e); err == nil || err.Error() != "decrypted folder does not exist" {
+	if err := encryptProgram(e); err == nil || err.Error() != "decrypted folder does not exist" {
 		t.Fatalf("Unexpected error %s", err)
 	}
 }
 
 func TestEncrypt_FailsOnPasswordMismatch(t *testing.T) {
 	d := helpers.CreateTempDir(t)
-	e := encryptInput{
+	e := &encryptInput{
 		in: helpers.NewFakeInput("password", "mismatch").In(),
 		l: newFakeSettings(settings.Settings{
 			DecryptedFolder: d,
@@ -57,7 +90,7 @@ func TestEncrypt_FailsOnPasswordMismatch(t *testing.T) {
 		}),
 	}
 
-	if err := encryptProgram(&e); err == nil || err.Error() != "passwords mismatch" {
+	if err := encryptProgram(e); err == nil || err.Error() != "passwords mismatch" {
 		t.Fatalf("Unexpected error %s", err)
 	}
 
@@ -66,21 +99,20 @@ func TestEncrypt_FailsOnPasswordMismatch(t *testing.T) {
 
 func TestEncrypt_FailsOnCompressionFailure(t *testing.T) {
 	z := newFakeZipperWithError()
-	f := helpers.CreateTempZip(t)
-	d := helpers.CreateTempDir(t)
-	e := encryptInput{
+	s := settings.Settings{
+		DecryptedFolder: helpers.CreateTempDir(t),
+		EncryptedFile:   helpers.CreateTempZip(t),
+	}
+	e := &encryptInput{
 		in: helpers.NewFakeInput("password", "password").In(),
-		l: newFakeSettings(settings.Settings{
-			DecryptedFolder: d,
-			EncryptedFile:   f,
-		}),
-		c: z,
+		l:  newFakeSettings(s),
+		c:  z,
 	}
 
-	if err := encryptProgram(&e); err != z.Err() {
+	if err := encryptProgram(e); err != z.Err() {
 		t.Fatalf("Unexpected error %s", err)
 	}
 
-	helpers.EnsureExists(t, f, false)
-	helpers.EnsureExists(t, d, true)
+	helpers.EnsureExists(t, s.EncryptedFile, false)
+	helpers.EnsureExists(t, s.DecryptedFolder, true)
 }

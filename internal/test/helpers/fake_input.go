@@ -21,8 +21,10 @@ func NewFakeInputWithSettingsPath(settingsPath paths.FilePath, lines ...string) 
 
 	f.in = &internal.Input{
 		IO: internal.IO{
+			// always add a newline at the end
+			// to properly mock one enter per line
 			Reader: strings.NewReader(
-				strings.Join(lines, "\n"),
+				strings.Join(lines, "\n") + "\n",
 			),
 			Writer: &f.out,
 		},

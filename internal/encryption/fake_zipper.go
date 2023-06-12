@@ -9,6 +9,10 @@ type fakeZipper struct {
 	err error
 }
 
+func newFakeZipper() *fakeZipper {
+	return &fakeZipper{}
+}
+
 func newFakeZipperWithError() *fakeZipper {
 	return &fakeZipper{
 		err: errors.New("fake Zipper error"),

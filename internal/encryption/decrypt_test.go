@@ -1,11 +1,49 @@
 package encryption
 
 import (
+	"strings"
 	"tddapps.com/truecrypt/internal/paths"
 	"tddapps.com/truecrypt/internal/settings"
 	"tddapps.com/truecrypt/internal/test/helpers"
 	"testing"
 )
+
+func TestDecrypt_SuccessOutput(t *testing.T) {
+	lines := []struct {
+		expected bool
+		line     string
+	}{
+		{true, "Enter encryption password:"},
+		{false, "secret1"},
+	}
+	for _, test := range lines {
+		t.Run(test.line, func(t *testing.T) {
+			f := helpers.NewFakeInput("secret1")
+
+			df := helpers.CreateTempDir(t)
+			if err := df.Delete(); err != nil {
+				t.Fatalf("Unexpected error deleting folder. err: %s", err)
+			}
+
+			d := &decryptInput{
+				in: f.In(),
+				e:  newFakeZipper(),
+				l: newFakeSettings(settings.Settings{
+					DecryptedFolder: df,
+					EncryptedFile:   helpers.CreateTempZip(t),
+				}),
+			}
+
+			if err := decryptProgram(d); err != nil {
+				t.Fatalf("Unexpected error. err: %s", err)
+			}
+
+			if found := strings.Contains(f.Out(), test.line); found != test.expected {
+				t.Errorf("Line found got: %t want: %t output: %s", found, test.expected, f.Out())
+			}
+		})
+	}
+}
 
 func TestDecrypt_FailsOnSettingsLoadError(t *testing.T) {
 	s := newFakeSettingsWithError()

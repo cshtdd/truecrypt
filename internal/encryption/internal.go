@@ -24,7 +24,7 @@ func loadSettings(in *internal.Input) (settings.Settings, error) {
 
 func readPassword(in *internal.Input) (string, error) {
 	in.WriteLine("Enter encryption password:")
-	switch read, line, err := in.ReadLine(); {
+	switch read, line, err := in.ReadSensitiveLine(); {
 	case err != nil:
 		return "", err
 	case read && len(line) > 5:
@@ -36,7 +36,7 @@ func readPassword(in *internal.Input) (string, error) {
 
 func confirmPassword(in *internal.Input, password string) error {
 	in.WriteLine("Confirm password:")
-	switch read, line, err := in.ReadLine(); {
+	switch read, line, err := in.ReadSensitiveLine(); {
 	case err != nil:
 		return err
 	case !read || line != password:

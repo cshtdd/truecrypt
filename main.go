@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-
 	"tddapps.com/truecrypt/internal"
 	"tddapps.com/truecrypt/internal/clean"
 	"tddapps.com/truecrypt/internal/encryption"
@@ -19,6 +18,7 @@ var flagEncrypt bool
 var flagDecrypt bool
 var flagClean bool
 var flagCleanSettings bool
+var flagTest bool
 var flagSettingsPath string
 var flagPause bool
 
@@ -31,6 +31,7 @@ func init() {
 	flag.BoolVar(&flagDecrypt, "decrypt", false, "Decrypts encrypted folder")
 	flag.BoolVar(&flagClean, "clean", false, "Deletes the decrypted folder")
 	flag.BoolVar(&flagCleanSettings, "cleanSettings", false, "Deletes the settings")
+	flag.BoolVar(&flagTest, "test", false, "Runs test program")
 
 	// Other config
 	flag.StringVar(&flagSettingsPath, "settings", settings.DefaultSettingsPath().String(), "[Optional] Settings file path")
@@ -90,6 +91,19 @@ func main() {
 		NewProgram("Clean", 5).Run(clean.Run)
 	case flagCleanSettings:
 		NewProgram("Clean Settings", 6).Run(clean.Settings)
+	case flagTest:
+		NewProgram("Test", 7).Run(func(i *internal.Input) error {
+			i.WriteLine("Enter secret:")
+			switch read, password, err := i.ReadSensitiveLine(); {
+			case err != nil:
+				return err
+			case !read:
+				return errors.New("empty input")
+			default:
+				i.WriteLine(fmt.Sprintf("Thanks for your input p: %s", password))
+				return nil
+			}
+		})
 	default:
 		NewProgram("Action Missing", 1).Run(func(i *internal.Input) error {
 			flag.Usage()
