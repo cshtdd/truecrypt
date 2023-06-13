@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"tddapps.com/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/paths"
 )
 
 func CreateTemp(t *testing.T) paths.FilePath {

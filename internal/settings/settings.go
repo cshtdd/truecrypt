@@ -4,7 +4,7 @@ package settings
 
 import (
 	"encoding/json"
-	"tddapps.com/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/paths"
 )
 
 type Settings struct {

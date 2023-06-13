@@ -1,9 +1,9 @@
 package settings_test
 
 import (
-	"tddapps.com/truecrypt/internal/paths"
-	"tddapps.com/truecrypt/internal/settings"
-	"tddapps.com/truecrypt/internal/test/helpers"
+	"github.com/cshtdd/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/settings"
+	"github.com/cshtdd/truecrypt/internal/test/helpers"
 	"testing"
 )
 

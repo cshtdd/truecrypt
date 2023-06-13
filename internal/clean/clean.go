@@ -3,8 +3,8 @@ package clean
 import (
 	"fmt"
 
-	"tddapps.com/truecrypt/internal"
-	"tddapps.com/truecrypt/internal/settings"
+	"github.com/cshtdd/truecrypt/internal"
+	"github.com/cshtdd/truecrypt/internal/settings"
 )
 
 func Run(in *internal.Input) error {

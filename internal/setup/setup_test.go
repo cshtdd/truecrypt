@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"tddapps.com/truecrypt/internal/paths"
-	"tddapps.com/truecrypt/internal/settings"
-	"tddapps.com/truecrypt/internal/setup"
-	"tddapps.com/truecrypt/internal/test/helpers"
+	"github.com/cshtdd/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/settings"
+	"github.com/cshtdd/truecrypt/internal/setup"
+	"github.com/cshtdd/truecrypt/internal/test/helpers"
 )
 
 func TestRunsOutputValidation(t *testing.T) {

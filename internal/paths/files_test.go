@@ -2,9 +2,9 @@ package paths_test
 
 import (
 	"fmt"
+	"github.com/cshtdd/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/test/helpers"
 	"os"
-	"tddapps.com/truecrypt/internal/paths"
-	"tddapps.com/truecrypt/internal/test/helpers"
 	"testing"
 )
 

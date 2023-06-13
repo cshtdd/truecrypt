@@ -1,10 +1,10 @@
 package encryption
 
 import (
+	"github.com/cshtdd/truecrypt/internal"
+	"github.com/cshtdd/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/settings"
 	"os/exec"
-	"tddapps.com/truecrypt/internal"
-	"tddapps.com/truecrypt/internal/paths"
-	"tddapps.com/truecrypt/internal/settings"
 )
 
 // compressor converts a directory into an encrypted file

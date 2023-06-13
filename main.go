@@ -4,13 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/cshtdd/truecrypt/internal"
+	"github.com/cshtdd/truecrypt/internal/clean"
+	"github.com/cshtdd/truecrypt/internal/encryption"
+	"github.com/cshtdd/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/settings"
+	"github.com/cshtdd/truecrypt/internal/setup"
 	"os"
-	"tddapps.com/truecrypt/internal"
-	"tddapps.com/truecrypt/internal/clean"
-	"tddapps.com/truecrypt/internal/encryption"
-	"tddapps.com/truecrypt/internal/paths"
-	"tddapps.com/truecrypt/internal/settings"
-	"tddapps.com/truecrypt/internal/setup"
 )
 
 var flagSetup bool

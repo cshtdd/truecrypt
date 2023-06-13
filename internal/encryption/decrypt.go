@@ -2,8 +2,8 @@ package encryption
 
 import (
 	"errors"
-	"tddapps.com/truecrypt/internal"
-	"tddapps.com/truecrypt/internal/settings"
+	"github.com/cshtdd/truecrypt/internal"
+	"github.com/cshtdd/truecrypt/internal/settings"
 )
 
 // Decrypt is the decrypt program

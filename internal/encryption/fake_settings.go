@@ -2,7 +2,7 @@ package encryption
 
 import (
 	"errors"
-	"tddapps.com/truecrypt/internal/settings"
+	"github.com/cshtdd/truecrypt/internal/settings"
 )
 
 type fakeSettings struct {

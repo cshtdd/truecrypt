@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"tddapps.com/truecrypt/internal/test/helpers"
+	"github.com/cshtdd/truecrypt/internal/test/helpers"
 )
 
 func TestCreateTemp(t *testing.T) {

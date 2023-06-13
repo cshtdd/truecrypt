@@ -2,9 +2,9 @@ package helpers
 
 import (
 	"bytes"
+	"github.com/cshtdd/truecrypt/internal"
+	"github.com/cshtdd/truecrypt/internal/paths"
 	"strings"
-	"tddapps.com/truecrypt/internal"
-	"tddapps.com/truecrypt/internal/paths"
 )
 
 type FakeInput struct {

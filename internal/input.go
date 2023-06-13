@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"tddapps.com/truecrypt/internal/paths"
+	"github.com/cshtdd/truecrypt/internal/paths"
 )
 
 type Input struct {

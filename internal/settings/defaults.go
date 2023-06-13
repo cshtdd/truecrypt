@@ -1,8 +1,8 @@
 package settings
 
 import (
+	"github.com/cshtdd/truecrypt/internal/paths"
 	"os"
-	"tddapps.com/truecrypt/internal/paths"
 )
 
 // DefaultSettingsPath Reads the default settings path.
